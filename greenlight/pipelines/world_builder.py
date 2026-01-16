@@ -310,14 +310,13 @@ class WorldBuilderPipeline:
             entities = confirmed_data.get("entities", {})
             world_hints = confirmed_data.get("world_hints", {})
 
-            # Load source chunks for context
-            chunks_path = self.project_path / "ingestion" / "chunks.json"
+            # Load full source text for context - world builder needs the complete story
+            source_text_path = self.project_path / "ingestion" / "source_text.json"
             source_text = ""
-            if chunks_path.exists():
-                chunks_data = json.loads(chunks_path.read_text(encoding="utf-8"))
-                # Combine first few chunks as context (not all to avoid token limits)
-                chunks = chunks_data.get("chunks", [])[:5]
-                source_text = "\n\n".join([c.get("text", "") for c in chunks])
+            if source_text_path.exists():
+                source_data = json.loads(source_text_path.read_text(encoding="utf-8"))
+                source_text = source_data.get("text", "")
+                self._log(f"Loaded full source text ({len(source_text):,} chars) for context")
 
             self._log(f"Entities: {len(entities.get('characters', []))} characters, "
                      f"{len(entities.get('locations', []))} locations, "
@@ -426,10 +425,13 @@ class WorldBuilderPipeline:
         prompts = []
         field_names = list(WORLD_CONTEXT_PROMPTS.keys())
 
+        # Use more source text for world context (up to 8000 chars)
+        context_limit = min(len(source_text), 8000)
+
         for field_name in field_names:
             system_prompt = WORLD_CONTEXT_PROMPTS[field_name]
             user_prompt = f"""SOURCE MATERIAL:
-{source_text[:3000]}
+{source_text[:context_limit]}
 
 {hints_str}
 
@@ -500,6 +502,9 @@ Cultural Context: {world_context.cultural_context}
 Clothing Norms: {world_context.clothing_norms}
 Social Structure: {world_context.social_structure}"""
 
+            # Extract character-specific context from full story
+            char_context = self._extract_character_context(char_name, source_text)
+
             for field_name in field_names:
                 system_prompt = CHARACTER_FIELD_PROMPTS[field_name]
                 user_prompt = f"""CHARACTER: {char_name}
@@ -508,8 +513,8 @@ ROLE: {char_data.get('role_hint', 'supporting')}
 
 {world_context_str}
 
-SOURCE MATERIAL EXCERPT:
-{source_text[:2000]}
+CHARACTER CONTEXT FROM STORY:
+{char_context}
 
 Generate the {field_name} for this character."""
 
@@ -575,6 +580,9 @@ Architecture Style: {world_context.architecture_style}
 Lighting Style: {world_context.lighting_style}
 Color Palette: {world_context.color_palette}"""
 
+            # Extract location-specific context from full story
+            loc_context = self._extract_entity_context(loc_name, source_text)
+
             for field_name in field_names:
                 system_prompt = LOCATION_FIELD_PROMPTS[field_name]
                 user_prompt = f"""LOCATION: {loc_name}
@@ -582,8 +590,8 @@ TAG: {loc_tag}
 
 {world_context_str}
 
-SOURCE MATERIAL EXCERPT:
-{source_text[:2000]}
+LOCATION CONTEXT FROM STORY:
+{loc_context}
 
 Generate the {field_name.replace('_', ' ')} for this location."""
 
@@ -640,13 +648,16 @@ Generate the {field_name.replace('_', ' ')} for this location."""
 Time Period: {world_context.time_period}
 Technology Level: {world_context.technology_level}"""
 
+            # Extract prop-specific context from full story
+            prop_context = self._extract_entity_context(prop_name, source_text)
+
             prompt = f"""PROP: {prop_name}
 TAG: {prop_tag}
 
 {world_context_str}
 
-SOURCE MATERIAL EXCERPT:
-{source_text[:1500]}
+PROP CONTEXT FROM STORY:
+{prop_context}
 
 Generate a brief description (10-24 words) of this prop's appearance and significance."""
 
@@ -675,6 +686,67 @@ Generate a brief description (10-24 words) of this prop's appearance and signifi
                 props.append(Prop(tag=prop_tag, name=prop_name))
 
         return props
+
+    def _extract_character_context(self, char_name: str, source_text: str, max_chars: int = 4000) -> str:
+        """Extract paragraphs mentioning a specific character from the source text.
+
+        This ensures character descriptions are based on actual story content,
+        not just the character name.
+        """
+        if not source_text or not char_name:
+            return source_text[:max_chars] if source_text else ""
+
+        # Split into paragraphs
+        paragraphs = source_text.split('\n\n')
+        relevant_paragraphs = []
+        name_lower = char_name.lower()
+
+        # Also check for partial name matches (e.g., "Dr. Watanabe" matches "Watanabe")
+        name_parts = char_name.split()
+
+        for para in paragraphs:
+            para_lower = para.lower()
+            # Check if character name or any name part is in paragraph
+            if name_lower in para_lower or any(part.lower() in para_lower for part in name_parts if len(part) > 2):
+                relevant_paragraphs.append(para.strip())
+
+        if relevant_paragraphs:
+            # Join relevant paragraphs up to max_chars
+            context = "\n\n".join(relevant_paragraphs)
+            if len(context) > max_chars:
+                context = context[:max_chars] + "..."
+            return context
+
+        # Fallback: return beginning of story if no matches
+        return source_text[:max_chars] if len(source_text) > max_chars else source_text
+
+    def _extract_entity_context(self, entity_name: str, source_text: str, max_chars: int = 3000) -> str:
+        """Extract paragraphs mentioning a specific entity (location/prop) from the source text."""
+        if not source_text or not entity_name:
+            return source_text[:max_chars] if source_text else ""
+
+        # Split into paragraphs
+        paragraphs = source_text.split('\n\n')
+        relevant_paragraphs = []
+        name_lower = entity_name.lower()
+
+        # Also check for partial matches
+        name_parts = [p for p in entity_name.split() if len(p) > 2]
+
+        for para in paragraphs:
+            para_lower = para.lower()
+            # Check if entity name or significant parts are in paragraph
+            if name_lower in para_lower or any(part.lower() in para_lower for part in name_parts):
+                relevant_paragraphs.append(para.strip())
+
+        if relevant_paragraphs:
+            context = "\n\n".join(relevant_paragraphs)
+            if len(context) > max_chars:
+                context = context[:max_chars] + "..."
+            return context
+
+        # Fallback: return beginning of story
+        return source_text[:max_chars] if len(source_text) > max_chars else source_text
 
     def _extract_title(self, source_text: str) -> str:
         """Extract or generate a title from source text."""
