@@ -1,0 +1,633 @@
+{
+  "title": "Shadows of the Go Board",
+  "created_at": "2026-01-15T14:10:15.316297",
+  "pipeline": "cinestage-batched",
+  "batch_size": 5,
+  "total_scenes": 15,
+  "scenes": [
+    {
+      "scene_number": 1,
+      "beat": "Mei watches Lin tend flowers from her bedroom patio at Lu Xian, eyes filled with mystery longing.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "dawn",
+      "frames": [
+        {
+          "frame_id": "[1.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "extreme wide from latticed window, capturing full patio and distant florist shop",
+          "prompt": "Camera positioned in extreme wide from the latticed window of the wooden pavilion, framing the full expanse of Mei's bedroom patio overlooking the courtyard toward the humble florist shop below, where dawn's first blush infiltrates through paper screens. Mei leans against the lacquered sill, her pale skin luminous, dark hair pinned with jade ornaments slightly askew, chin tilted toward the lattice with gaze unfocused on distant cypress silhouettes, fingertips pressing the lacquer sill with the weight of held breath, micro-tension rippling through her embroidered silk collar as shoulders subtly hunch in mystery longing. Depth layers chain artistically: foreground silk cushions slumped in soft focus against worn wooden railing, midground sharpens on Mei's hanfu robes of ivory silk with visible weave imperfections at the hem brushing patio stones, background dissolves into courtyard haze where flower buckets gleam faintly and pressed dirt paths wind toward Lin's shop under cream-striated sky. Dawn light acts as active force, spilling golden accents across jade pins and pooling in hollows of her melancholic beauty, casting long shadows from latticed bars that striate her form like unspoken desires, while far florist blooms catch individual petals in soft glow against burnt umber wooden structures. Material textures breathe wear: hanfu silk raw and crosshatched with faint thread pulls from nightly repose, lacquer sill chipped at edges from years of leaning elbows, distant flower buckets of splintered wood holding wilting peonies with dew-kissed petals frayed by handling. Beyond, Lin's simple cotton robes hang loose on his frame, weathered hands parting stems with kind eyes distant. ; cinematic still, Tang Dynasty China, dawn natural light, 35mm film grain",
+          "characters": [
+            "Mei",
+            "Lin"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[1.2.cB]",
+          "shot_type": "CU",
+          "camera_position": "medium close-up three-quarter from camera right at arm's length on Mei's face",
+          "prompt": "Camera in medium close-up three-quarter from camera right at arm's length, isolating Mei's face to collar in intimate scrutiny as dawn filters through lattice. Her melancholic beauty etches deep: pale skin taut with micro-tension, eyes filled with mystery longing narrowing slightly at unseen Lin, dark lashes casting shadows, lips parted in silent breath while jade pins glint in hair with subtle tremor of fingertip brush. Depth layers unfold: foreground faint blur of embroidered collar threads, midground her face in razor focus where faint melancholy lines crease brow, background lattice patterns dissolve into hazy courtyard glow. Dawn light pours as active force, igniting gold accents on jade ornaments and hollowing cheeks with soft sidelight, throwing collar shadows into intricate play across porcelain skin. Material textures reveal wear: ivory hanfu collar silk with crosshatch weave imperfect at seams from perspiration's trace, jade pins polished smooth yet etched with microscopic fissures from generations, skin bearing subtle pores like whispered secrets. Her gaze pierces beyond frame toward Lin tending flowers, kind eyes in his weathered face flickering upward unknowingly, simple cotton robes dusted with pollen. The longing manifests in held breath's quiver, shoulders beyond collar subtly rising, evoking unspoken yearnings across the divide of wooden pavilions and paper screens. Lantern remnants from night flicker dimly in corner haze, contrasting dawn's encroachment. ; cinematic still, Tang Dynasty China, dawn sidelight, 35mm film grain",
+          "characters": [
+            "Mei"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[1.3.cA]",
+          "shot_type": "MS",
+          "camera_position": "over-the-shoulder from Mei looking down to courtyard florist",
+          "prompt": "Camera positioned behind Mei's shoulder over-the-shoulder, gazing past her toward the courtyard florist shop where Lin tends flowers, dawn haze softening the view. Mei\u2019s form occupies left frame edge, hanfu silk robes waist-up in ivory with arms visible, one hand gripping sill with knuckles whitening in micro-tension, posture leaning forward as if pulled by longing's gravity, dark hair cascading with jade pins catching light. Depth layers chain: foreground her shoulder and silk texture in partial focus, midground sharpens on latticed window framing Lin's humble figure, background distant mountains under cream sky streaked burnt umber. Dawn light invades as active force, streaming through lattice to gild her jade ornaments and silhouette Lin's weathered hands amid blooms, petals unfurling in golden pools while pavilion shadows retreat. Material textures pulse with history: hanfu silk raw weave visible with shoulder seam frays from restless nights, lacquered sill beneath fingers glossy yet scarred by nails, Lin's cotton robes patched at elbows from soil wear, flower stems fibrous and bent by careful pruning. His kind eyes glance secretively upward toward Lu Xian's lanterns, simple motions parting peonies with callused thumbs. Mei's breath fogs lattice faintly, mystery longing etching her still form against the awakening world of wooden structures, paper screens glowing translucently, courtyard dirt pressed smooth by morning feet. Gold accents dance on embroidered collars visible in her turn of head. ; cinematic still, Tang Dynasty China, dawn backlight, 35mm film grain",
+          "characters": [
+            "Mei",
+            "Lin"
+          ],
+          "duration": 3.0
+        }
+      ]
+    },
+    {
+      "scene_number": 2,
+      "beat": "Madame Chou reveals Zhoa and Min Zhu as final suitors for Mei's contract, sparking whispers of hidden agendas.",
+      "location": "LU XIAN BROTHEL",
+      "time_of_day": "day",
+      "frames": [
+        {
+          "frame_id": "[2.1.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot frontal on Madame Chou at center of lantern-lit hall",
+          "prompt": "Camera in medium shot frontal on Madame Chou waist-up in the brothel's main hall, day light filtering through paper screens as she gestures dramatically with jade-ringed hands, calculating gaze sweeping room, lips curling in revelation of suitors, micro-tension in tightened jaw hinting hidden agendas. Elaborate silk robes of burnt umber flow with gold embroidery, arms visible in authoritative sweep. Depth layers: foreground lacquered table with worn bronze Go stones scattered, midground Madame Chou in crisp focus her rings glinting, background paper screens partitioning whispers of courtesans in soft ivory silks. Day light acts forcefully, pouring through latticed windows to pool on her silk collar catching threads individually, casting calculating shadows across stern faces of Zhoa and corpulent Min Zhu seated nearby. Material textures worn: silk robes sheen marred by faint ink stains at cuff from ledgers, jade rings oversized with generational polish scratches, Go stones smooth spheres pitted by thumb pressure. Zhoa's military uniform stern with frayed epaulets, Min Zhu's flashy silks bulging with gold jewelry chains tangled. Whispers ripple: servant girls' plain robes rustling, eyes observant. Brothel lanterns dim in day, wooden beams overhead etched with smoke residue, courtyard glimpses beyond screens. Her voice implied in poised chest expansion, sparking intrigue. ; cinematic still, Tang Dynasty China, daylight through screens, 35mm film grain",
+          "characters": [
+            "Madame Chou",
+            "Zhoa",
+            "Min Zhu"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[2.2.cB]",
+          "shot_type": "MS",
+          "camera_position": "medium close-up reaction on Mei from Chou's angle",
+          "prompt": "Camera positioned medium close-up three-quarter left on Mei's reaction waist-up, arms crossed subtly in hanfu silk, pale face registering spark of whispers, eyes widening with mystery under jade pins, micro-tension in bitten lip as hidden agendas loom, dark hair framing melancholic beauty. Depth layers: foreground blurred silk cushion edge, midground her torso sharp where embroidered collar quivers, background dissolves into brothel hall's paper screens and suitors' forms. Day light floods actively, gilding jade ornaments and tracing gold accents on ivory robes, sidelighting cheek to throw subtle doubt shadows. Textures intimate: hanfu silk crosshatch imperfect at seams from wear, skin pale with faint melancholy veins, jade pins etched finely. Nearby, Madame Chou's gaze bores, Zhoa's stern face impassive in uniform, Min Zhu's corpulent cheeks jiggling in flashy silks. Whispers from servant girls carry, plain robes shifting, observant eyes darting. Lacquered furniture gleams dully, lanterns sway faintly, wooden pavilion creaks implied. Mei's fingers twist fabric hem, longing from dawn lingering amid contract revelations. Burnt umber walls frame the intrigue, courtyard lanterns distant. ; cinematic still, Tang Dynasty China, diffused day sidelight, 35mm film grain",
+          "characters": [
+            "Mei",
+            "Madame Chou"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[2.3.cA]",
+          "shot_type": "WS",
+          "camera_position": "wide establishing the brothel hall with all present",
+          "prompt": "Camera wide establishing the multi-story brothel hall, full figures amid wooden pavilions, paper screens partitioning, lanterns hanging, day light cascading. Madame Chou center commanding, silk robes billowing in gesture, Zhoa stern in uniform, Min Zhu corpulent in gold-laden silks, Mei poised melancholic, servant girls whispering. Micro-tensions: Chou's ringed fingers clenching, Mei's gaze downcast. Depth: foreground worn floor mats, midground group in focus, background courtyard haze. Day light active, streaming gold through lattices, pooling on lacquers, shadowing corners burnt umber. Textures: silks frayed, uniforms weathered, screens translucent with repairs. Whispers echo hidden agendas. ; cinematic still, Tang Dynasty China, natural day fill light, 35mm film grain",
+          "characters": [
+            "Madame Chou",
+            "Mei",
+            "Zhoa",
+            "Min Zhu",
+            "Servant Girl"
+          ],
+          "duration": 4.0
+        }
+      ]
+    },
+    {
+      "scene_number": 3,
+      "beat": "Mei instructs servant girl to deliver sealed note to Lin at florist shop, to open only at evening.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "day",
+      "frames": [
+        {
+          "frame_id": "[3.1.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot on Mei speaker at lacquered vanity",
+          "prompt": "Camera medium shot frontal on Mei waist-up at lacquered vanity, day light through latticed window, instructing with poised hand extending sealed note, melancholic eyes intense, micro-tension in pursed lips emphasizing 'open only at evening,' jade pins secure dark hair, hanfu arms gesturing silk sleeves. Depth: foreground sealed note's wax seal sharp, midground Mei focused collar to waist, background silk cushions and paper screens soft. Day light pours, catching gold on jade, illuminating note's folds, shadowing vanity drawers. Textures: hanfu ivory silk weave worn at cuffs, vanity lacquer chipped, note paper crinkled with creases. Servant girl listens opposite, plain robes attentive. Bedroom lanterns dim, courtyard view distant. ; cinematic still, Tang Dynasty China, day window light, 35mm film grain",
+          "characters": [
+            "Mei",
+            "Servant Girl"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[3.2.cB]",
+          "shot_type": "MS",
+          "camera_position": "over-shoulder from Mei on servant girl's reaction",
+          "prompt": "Camera over-shoulder from Mei positioned behind her shoulder looking to servant girl, day glow on plain robes waist-up, young face observant eyes widening at instructions, hands clasping note with micro-tension knuckles pale, posture straightening. Depth: foreground Mei's silk shoulder blur, midground girl sharp, background latticed window courtyard. Day light active, backlight girl rimming hair, pooling on note. Textures: plain cotton patched hems, note sealed rough, silk backdrop frayed. Mei's hand lingers implied. ; cinematic still, Tang Dynasty China, day backlight, 35mm film grain",
+          "characters": [
+            "Servant Girl",
+            "Mei"
+          ],
+          "duration": 3.0
+        }
+      ]
+    },
+    {
+      "scene_number": 4,
+      "beat": "Servant girl slips note to Lin on pressed dirt road, noticing his secretive glance toward Lu Xian.",
+      "location": "PRESSED DIRT ROAD",
+      "time_of_day": "dusk",
+      "frames": [
+        {
+          "frame_id": "[4.1.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot action on servant girl slipping note",
+          "prompt": "Camera medium shot on servant girl waist-up on pressed dirt road at dusk, lanterns flickering evening light, slipping sealed note discreetly, observant eyes darting, micro-tension in hunched shoulders, plain robes dusty from travel, arms extended furtively. Depth: foreground dirt clod foreground, midground girl sharp, background wooden buildings Lu Xian looming. Dusk light lanterns pool gold on note, shadowing face. Textures: cotton robes soil-stained, road packed smooth ruts, note wax cracked. Lin receives, weathered hands kind eyes glancing secretive toward brothel. ; cinematic still, Tang Dynasty China, dusk lantern glow, 35mm film grain",
+          "characters": [
+            "Servant Girl",
+            "Lin"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[4.2.cB]",
+          "shot_type": "CU",
+          "camera_position": "close-up on Lin's face reaction",
+          "prompt": "Camera close-up three-quarter right on Lin's face to collar, dusk lanterns catching kind eyes widening secretive glance to Lu Xian, micro-tension furrowed brow holding note, simple cotton collar pollen-dusted. Depth: foreground note edge blur, midground face focus, background road haze mountains. Lantern light active, gilding eyes gold, shadowing jaw. Textures: skin weathered lines, cotton weave coarse, jade distant accents. Servant girl slips away. ; cinematic still, Tang Dynasty China, evening lantern sidelight, 35mm film grain",
+          "characters": [
+            "Lin",
+            "Servant Girl"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[4.3.cA]",
+          "shot_type": "WS",
+          "camera_position": "wide on road with Lu Xian distant",
+          "prompt": "Camera wide full figures on pressed dirt road, servant girl handing note to Lin, his glance up to lit Lu Xian brothel, lanterns swaying, wooden buildings sides, mountains dusk silhouette. Micro-tensions evident. Depth full scene. Lanterns light pools, shadows long. Textures worn roads, robes. ; cinematic still, Tang Dynasty China, dusk ambient lanterns, 35mm film grain",
+          "characters": [
+            "Servant Girl",
+            "Lin"
+          ],
+          "duration": 4.0
+        }
+      ]
+    },
+    {
+      "scene_number": 5,
+      "beat": "Zhoa visits Mei, boasting military honors but evading questions about his true affections, planting doubt.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[5.1.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot on Zhoa speaker boasting",
+          "prompt": "Camera medium frontal on Zhoa waist-up, night candlelight in bedroom, military uniform stern face boasting honors, commanding presence gesturing broad, micro-tension evading eyes flicker, arms visible epaulets. Depth: foreground candle flicker, midground Zhoa, background screens. Candlelight pools on gold insignia, shadows dramatic. Textures: uniform wool frayed, silk Mei's backdrop. Mei questions opposite. ; cinematic still, Tang Dynasty China, candlelight flicker, 35mm film grain",
+          "characters": [
+            "Zhoa",
+            "Mei"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[5.2.cB]",
+          "shot_type": "MCU",
+          "camera_position": "medium close-up on Mei's doubtful reaction",
+          "prompt": "Camera medium close-up on Mei face to collar, night lanterns, eyes planting doubt narrowing at evasion, melancholic lips questioning, jade pins glow. Depth intimate. Light catches skin, shadows doubt. Textures hanfu silk, jade worn. Zhoa beyond. ; cinematic still, Tang Dynasty China, night lantern glow, 35mm film grain",
+          "characters": [
+            "Mei",
+            "Zhoa"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[5.3.cA]",
+          "shot_type": "OTS",
+          "camera_position": "over-shoulder from Mei on Zhoa",
+          "prompt": "Camera OTS from Mei behind shoulder to Zhoa, night light, his stern face boasting, evading gaze. Depth Zhoa focus, bedroom soft. Light active on uniform. Textures detailed. ; cinematic still, Tang Dynasty China, low night key light, 35mm film grain",
+          "characters": [
+            "Zhoa",
+            "Mei"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[5.4.cB]",
+          "shot_type": "CU",
+          "camera_position": "close-up Zhoa's evasive eyes",
+          "prompt": "Camera close-up on Zhoa's eyes evading, stern lines, night shadow. Depth eye focus. Candlelight glints. Textures skin creases. ; cinematic still, Tang Dynasty China, dramatic night shadow, 35mm film grain",
+          "characters": [
+            "Zhoa"
+          ],
+          "duration": 2.5
+        }
+      ]
+    },
+    {
+      "scene_number": 6,
+      "beat": "Min Zhu dines at Lu Xian, flaunting wealth while servant overhears hints of his gambling debts.",
+      "location": "LU XIAN BROTHEL",
+      "time_of_day": "dusk",
+      "frames": [
+        {
+          "frame_id": "[6.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "extreme wide from balcony overlooking dining hall",
+          "prompt": "Camera positioned in extreme wide from the balcony railing overlooking the bustling dining hall of Lu Xian brothel, capturing the wooden pavilion's latticed beams arching overhead. Min Zhu, corpulent in flashy silk robes embroidered with gold phoenixes, gestures expansively with jade-ringed fingers, his corpulent frame leaning forward as he boasts, chin thrust out with micro-tension of concealed desperation, beads of sweat tracing temple lines. Foreground blooms with steam rising from porcelain bowls in soft focus, midground sharpens on Min Zhu's gold jewelry glinting amid platters of glistening duck and bamboo shoots, background fades into paper screens where shadows of courtesans dissolve into cream striations of dusk light filtering through lattice windows. Lantern glow active as warm amber force cascades from hanging silk lanterns, pooling on lacquered tables to ignite threads in Min Zhu's collar while casting elongated shadows that claw across pressed floorboards worn smooth by countless footsteps. Material textures reveal raw silk in crimson with frayed hems from opulent excess, bronze chopsticks etched with faint patina of use, ivory chopstick rests cracked from heat. Distant courtyard murmurs through open screens, flower petals drifting in twilight breeze. Subtle servant girl lurks at edge, ears attuned; cinematic still, Tang Dynasty China, lantern dusk glow, 35mm film grain.",
+          "characters": [
+            "Min Zhu",
+            "SERVANT GIRL"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[6.2.cA]",
+          "shot_type": "MS",
+          "camera_position": "three-quarter from camera left at table level",
+          "prompt": "Camera at medium shot three-quarter from camera left at table level, framing Min Zhu's waist-up dominance as he dines, flaunting a heavy gold chain that sways with each bombastic gesture, his calculating eyes narrowing with micro-tension of unspoken debts, lips parting to spill hints of gambling woes masked as bravado. Foreground holds a half-eaten peach in soft focus, juice beading on its fuzz, midground locks on Min Zhu's embroidered collar blooming gold accents against pale corpulent neck, background blurs into wooden pillars veined with age and hanging lanterns swaying gently. Dusk lantern light acts as probing force, raking across his silk robes to highlight weave imperfections at the shoulder seam, throwing his jowls into burnt umber shadow while illuminating faint ink stains on cuffs from hurried ledgers. Textures abound in heavy silk brocade worn shiny at elbows from nervous rubbing, mahogany table lacquer chipped at edges revealing heartwood grain, porcelain wine cup with hairline cracks from fervent grips. Servant girl's silhouette haunts periphery, head tilted in eavesdropping poise; cinematic still, Tang Dynasty China, amber lantern raking light, 35mm film grain.",
+          "characters": [
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[6.3.cB]",
+          "shot_type": "MCU",
+          "camera_position": "over-shoulder from Min Zhu toward servant girl lurking by screen",
+          "prompt": "Camera in medium close-up over Min Zhu's shoulder, positioned behind his bulk looking past toward the servant girl lurking by paper screen, her young face half-lit with observant eyes widening in micro-tension of shocked comprehension, plain cotton robes shifting as she presses against lattice edge, fingertips gripping worn wood with held breath. Foreground Min Zhu's shoulder occupies lower third in soft focus, silk threads catching light, rising into sharp focus on servant girl's kind yet wary gaze, beyond which dining hall dissolves into haze of steam and shadows. Lantern light pulses as inquisitive force, spilling golden pools on her cheekbones while carving deep shadows under her brow, illuminating faint dust motes in the air from courtyard breeze. Material textures detail her simple cotton weave crosshatched with repairs at hem, jade ear stud matte from daily wear, paper screen with ink-faded motifs of plum blossoms fraying at edges. Min Zhu's laughter echoes distantly, his debt hints lingering; cinematic still, Tang Dynasty China, flickering lantern shadows, 35mm film grain.",
+          "characters": [
+            "SERVANT GIRL",
+            "Min Zhu"
+          ],
+          "duration": 3.5
+        }
+      ]
+    },
+    {
+      "scene_number": 7,
+      "beat": "Mei ponders Lin's dedication, questioning if his gentle touch hides a deeper connection to her past.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "day",
+      "frames": [
+        {
+          "frame_id": "[7.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "wide from latticed window overlooking courtyard",
+          "prompt": "Camera in wide shot from the latticed window overlooking courtyard, establishing Mei's bedroom with lacquered vanity dominating frame, Mei seated on silk cushions, her pale skin ethereal in morning light, dark hair pinned with jade combs, melancholic beauty etched as she ponders, chin tilted toward lattice with gaze unfocused on distant cypress, fingertips pressing lacquer sill with weight of held breath and micro-tension of unearthed memory. Foreground lattice shadows pattern lower third in soft focus, midground sharpens on her ivory hanfu silk robe draping waist-up, embroidered collar framing collarbones, background courtyard fades into green mountains through dissolving paper screens. Dawn light filters as awakening force through wooden slats, gilding jade pins to ignite subtle greens against her hair, casting long umber fingers across cushions worn plush from solitary nights. Textures reveal hanfu silk raw and imperfect at seams, jade comb veined with natural flaws smoothed by touch, vanity lacquer buckled faintly from humid years. Lin's imagined gentle hands ghost in her reverie; cinematic still, Tang Dynasty China, dawn natural light, 35mm film grain.",
+          "characters": [
+            "MEI"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[7.2.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up frontal at eye level",
+          "prompt": "Camera in close-up frontal at eye level to Mei's face, capturing melancholic beauty as she ponders Lin's dedication, eyes distant with micro-tension of doubt, brows subtly furrowed, lips parted in silent question of past connections, a single hair tendril escaping jade pin to brush cheek. Foreground faint breath mist on sill glass in soft focus, midground her face in razor focus from collar up, background blurs into cream paper screens. Day light pours as introspective force through lattice, pooling gold on pale skin to highlight faint freckles, throwing hollows under eyes into soft shadow from sleepless introspection. Material textures: porcelain skin with subtle vein tracery, jade pin etched with floral wear from daily pinning, silk collar weave visible as delicate crosshatch frayed at edge. Memories of Lin's weathered hands flicker unspoken; cinematic still, Tang Dynasty China, latticed dawn glow, 35mm film grain.",
+          "characters": [
+            "MEI"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[7.3.cA]",
+          "shot_type": "MS",
+          "camera_position": "three-quarter from camera right at cushion level",
+          "prompt": "Camera medium shot three-quarter from camera right at cushion level, Mei waist-up in hanfu, arms folded with micro-tension as she questions deeper bonds, hand rising to touch jade ornament, gaze drifting to a faded flower petal from Lin on vanity. Foreground silk cushions rumple lower third softly, midground her form sharp with embroidered sleeves cascading, background latticed window frames courtyard haze. Morning light acts as revelatory force, streaming to catch gold threads in robe while veiling far walls in umber mist. Textures: silk hanfu ivory with visible weave imperfections at cuff, jade ornament worn smooth by fingers tracing old pains, petal pressed dry with brittle edges. Past whispers in her poised stillness; cinematic still, Tang Dynasty China, soft morning diffusion, 35mm film grain.",
+          "characters": [
+            "MEI"
+          ],
+          "duration": 3.0
+        }
+      ]
+    },
+    {
+      "scene_number": 8,
+      "beat": "Evening falls; Min Zhu enters her room, Go board ready on mahogany table amid tense silence.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "dusk",
+      "frames": [
+        {
+          "frame_id": "[8.1.cA]",
+          "shot_type": "EWS",
+          "camera_position": "extreme wide from doorway threshold",
+          "prompt": "Camera extreme wide from doorway threshold, capturing evening fall in Mei's bedroom as Min Zhu enters, corpulent frame filling entrance in flashy silk, Go board poised on mahogany table amid tense silence, his stern approach with micro-tension in clenched jaw, eyes scanning room possessively. Foreground door slats in soft focus cast elongated shadows, midground table sharp with black-white Go stones arrayed, Mei's silhouette by window, background paper screens fade into courtyard dusk. Lantern light ignites as encroaching force from table fixture, bathing board in amber glow to make stones gleam like polished obsidian, throwing Min Zhu's shadow vast across lacquered floor. Textures: mahogany table grain deep and oiled with wear from games past, silk robes gold-stitched with threads loosening at hems, Go bowl bronze pitted by generations. Silence thickens air; cinematic still, Tang Dynasty China, encroaching lantern dusk, 35mm film grain.",
+          "characters": [
+            "Min Zhu",
+            "MEI"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[8.2.cB]",
+          "shot_type": "MS",
+          "camera_position": "medium from behind Min Zhu toward Mei",
+          "prompt": "Camera medium shot from behind Min Zhu's shoulder toward Mei by window, her melancholic poise tense as he enters, chin lifting slightly with micro-tension of wariness, hanfu silk catching fading light. Foreground his bulky shoulder soft, midground Mei waist-up sharp, background lattice dusk. Dusk lantern emerges as tension force, pooling on her jade pins while shadowing her eyes. Textures: silk robe imperfect weave, jade hairpins worn glossy; cinematic still, Tang Dynasty China, twilight lantern pool, 35mm film grain.",
+          "characters": [
+            "MEI",
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[8.3.cA]",
+          "shot_type": "INS",
+          "camera_position": "insert close on Go board from table level",
+          "prompt": "Camera insert close on Go board from table level, mahogany expanse ready amid silence, stones arranged in opening formation, wood grain swirling under lantern light with micro-shadows hinting impending battle. Foreground single black stone foreground soft, midground grid sharp, background blurs to room edges. Lantern light presses as ominous force, illuminating stone polish from shadowy plays. Textures: wood scarred faintly, stones smooth jade-like wear; cinematic still, Tang Dynasty China, intimate lantern focus, 35mm film grain.",
+          "characters": [],
+          "duration": 2.5
+        }
+      ]
+    },
+    {
+      "scene_number": 9,
+      "beat": "Game begins intensely; Min Zhu probes Mei's knowledge of Go masters, revealing his own shadowy training.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "dusk",
+      "frames": [
+        {
+          "frame_id": "[9.1.cA]",
+          "shot_type": "OTS",
+          "camera_position": "over-the-shoulder from Mei to Min Zhu",
+          "prompt": "Camera over-the-shoulder from Mei to Min Zhu as game begins intensely, his corpulent hand placing stone with probing words on Go masters, fingers hovering with micro-tension of revelation, eyes glinting shadowy training secrets, silk sleeve pooling on table. Foreground Mei's shoulder soft in hanfu silk, midground his hand and board sharp, background her face partial. Lantern light strikes as interrogative force, raking across stones to spark whites, shadowing his jowls. Textures: silk frayed, stones generation-worn, mahogany chipped; cinematic still, Tang Dynasty China, probing lantern rake, 35mm film grain.",
+          "characters": [
+            "Min Zhu",
+            "MEI"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[9.2.cB]",
+          "shot_type": "MCU",
+          "camera_position": "medium close-up on Mei reacting",
+          "prompt": "Camera medium close-up on Mei as Min Zhu probes, her melancholic eyes narrowing with micro-tension, lips pursing knowledge of masters, jade pins catching light amid dark hair cascade. Foreground breath soft, midground face to collar sharp, background board blur. Light pulses as challenging force, gilding skin, shadowing brow. Textures: skin porcelain-veined, jade flawed smooth; cinematic still, Tang Dynasty China, intense lantern pulse, 35mm film grain.",
+          "characters": [
+            "MEI"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[9.3.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up on Min Zhu's face revealing",
+          "prompt": "Camera close-up on Min Zhu's face revealing shadowy training, mouth opening boast amid game intensity, eyes sly with micro-tension, gold chain framing jowls. Foreground lip edge soft, midground face sharp, background dark. Lantern glows as confessional force, illuminating sweat beads, umber shadows. Textures: skin oiled pores, jewelry patinaed; cinematic still, Tang Dynasty China, confessional lantern glow, 35mm film grain.",
+          "characters": [
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[9.4.cB]",
+          "shot_type": "OTS",
+          "camera_position": "over Min Zhu's shoulder to Mei placing stone",
+          "prompt": "Camera over Min Zhu's shoulder to Mei placing stone intently, her slender hand precise with micro-tension, hanfu cuff slipping. Foreground his shoulder soft, midground hand/board sharp. Light carves as combative force. Textures: cuff weave imperfect; cinematic still, Tang Dynasty China, combative lantern carve, 35mm film grain.",
+          "characters": [
+            "MEI",
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        }
+      ]
+    },
+    {
+      "scene_number": 10,
+      "beat": "Mei pours scented tea over Min Zhu's shoulder, her hair cascading, distracting him with sensual whispers.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[10.1.cA]",
+          "shot_type": "OTS",
+          "camera_position": "over Min Zhu's shoulder to Mei pouring",
+          "prompt": "Camera over Min Zhu's shoulder to Mei pouring scented tea, her form leaning in sensual distraction, dark hair cascading loose from jade pins with micro-tension of calculated allure, porcelain pot steaming jasmine tendrils, hanfu silk whispering against his back. Foreground his shoulder silk soft focus, midground her hands and cascade sharp waist-up, background Go board night-shrouded. Candlelight from table acts as seductive force, licking steam wisps to gold, illuminating hair strands individually, pooling umber on stones. Textures: silk robe crosshatch visible shoulder seam wear, pot crackle glaze chipped rim, hair lustrous with oil sheen. Whispers poised on lips; cinematic still, Tang Dynasty China, seductive candle flicker, 35mm film grain.",
+          "characters": [
+            "MEI",
+            "Min Zhu"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[10.2.cB]",
+          "shot_type": "MCU",
+          "camera_position": "medium close-up on Min Zhu distracted",
+          "prompt": "Camera medium close-up on Min Zhu as Mei distracts, eyes glazing with micro-tension of faltering focus, lips parting under whisper influence, gold jewelry shifting neck. Foreground steam veil soft, midground face to collar sharp, background her arm blur. Night candlelight seduces as enfeebling force, highlighting sweat gloss, deep shadows jowls. Textures: skin corpulent creases, jewelry worn links; cinematic still, Tang Dynasty China, enfeebling candle seduction, 35mm film grain.",
+          "characters": [
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[10.3.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up on Mei's cascading hair and lips",
+          "prompt": "Camera close-up on Mei's cascading hair and lips whispering sensually, tendrils framing pale face with micro-tension of ploy, breath parting lips rose-tinted. Foreground single strand soft, midground face sharp collar-up, background dark. Candle flame dances as intimate force, gilding lips dew, shadowing lashes. Textures: hair silk-fine ends split, lips subtle chap; cinematic still, Tang Dynasty China, intimate candle dance, 35mm film grain.",
+          "characters": [
+            "MEI"
+          ],
+          "duration": 3.5
+        }
+      ]
+    },
+    {
+      "scene_number": 11,
+      "beat": "Flustered Min Zhu blunders key move; Mei uncovers his hidden bankruptcy through overheard brothel gossip.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[11.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "extreme wide from latticed window corner, encompassing lacquered Go table in center",
+          "prompt": "Camera positioned in extreme wide from the latticed window's shadowed embrasure, gazing across the chamber where silk cushions slump against lacquered walls, capturing the full tableau of play. Corpulent Min Zhu hunches over the Go board, his thick fingers hovering with sweat-beaded hesitation above a cluster of black stones, jaw clenched in flustered betrayal as he nudges the fatal piece into blunderous placement, beads of perspiration tracing rivulets down his rouged temple. Mei sits opposite, her pale skin luminous, chin tilted slightly toward the lattice, gaze sharpening from unfocused melancholy to piercing insight, jade pins glinting as dark hair shifts with subtle nod. Foreground blooms with frayed silk tassels dangling from table edge in soft haze, midground snaps into crystalline focus on polished ebony and white Go stones worn smooth by countless rivalries, their intersections a battlefield of territory lost, background layers dissolve paper screens into cream-veined obscurity pierced by courtyard lantern flickers. Lantern light pulses as active force from overhead fixture, carving golden pools across Min Zhu's flashy silk robes strained at seams with embroidered dragons fraying at cuffs, casting elongated shadows that claw up Mei's ivory hanfu with embroidered collars catching individual threads in amber glow, while far walls recede into burnt umber void. Material textures reveal raw silk in Min Zhu's robe with visible crosshatch weave imperfect at corpulent folds, lacquered table scarred faintly from stone impacts, jade ornaments on Mei's hair etched with dynastic filigree dulled by nightly wear. Micro-tensions ripple: Min Zhu's knuckles whiten gripping board edge, Mei's fingertips press lacquer sill holding breath against rising revelation; cinematic still, Tang Dynasty China, lanternlit shadows, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Min Zhu"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[11.2.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot three-quarter from camera right at arm's length over Min Zhu's shoulder",
+          "prompt": "Camera positioned medium shot three-quarter from camera right at arm's length, peering past Min Zhu's bulky shoulder toward the Go board where his blundered stone disrupts white territory fatally. Min Zhu's face contorts in flustered dismay, corpulent cheeks flushing crimson, eyes bulging as realization dawns, meaty hand withdrawing with tremor while gold rings clink against wood. Foreground holds frayed cuff of his flashy silk robe in shallow depth, threads unraveling from opulent embroidery; midground centers the Go board's chaos, black stone isolated amid white encirclement, polished surfaces reflecting lantern flicker; background blurs Servants' silhouettes beyond paper screen, their whispers infiltrating. Lantern glow intrudes as dramatic force, spilling molten gold across Min Zhu's strained silk collar exposing weave imperfections and sweat-darkened patches, hurling jagged shadows across board to veil Mei's poised form in half-light. Textures abound: bronze-weighted silk heavy with accumulated brothel incense, Go stones glossy yet pitted from generations of pressure, wooden lattice fretted with age-cracks filtering night air. Mei's distant reaction hinted in micro-tension, her fan pausing mid-air; Min Zhu's lips part in silent curse, brow furrowing deeper with bankruptcy's unspoken weight. Silk cushions sag lower third in bokeh, rising to sharp jade comb in her hair catching light, dissolving into courtyard lanterns' distant pulse. Jade rings on his fingers worn smooth, hanfu hems whispering against tatami; cinematic still, Tang Dynasty China, flickering lanternlight, 35mm film grain.",
+          "characters": [
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[11.3.cB]",
+          "shot_type": "CU",
+          "camera_position": "close-up positioned behind paper screen edge, looking past lattice toward Mei",
+          "prompt": "Camera in close-up positioned behind paper screen's cream folds, looking past latticed filigree toward Mei as she overhears brothel gossip unveiling Min Zhu's bankruptcy, her melancholic beauty sharpening into resolve. Mei's pale face tilts chin toward lattice, dark eyes widening with unfocused gaze snapping to clarity, jade pins shifting as she strains to catch whispered revelations from servant beyond, fingertips pressing lacquer sill with held breath's tension, embroidered collar rising with subtle swallow. Foreground veils gossamer screen threads in soft focus, midground crystallizes her jade-adorned hair and porcelain skin flushed faintly, background fractures courtyard lanterns through lattice into star-like pricks amid shadowed eaves. Candlelight from vanity acts as probing force, pooling warm amber on her cheekbones to etch delicate hollows, threading gold through silk robe's visible weave at neckline, thrusting distant Min Zhu's slumped form into umbrous silhouette. Material textures intimate: hanfu silk raw and imperfect at collar seam, jade pins coolly etched with floral motifs dulled by touch, paper screen translucent with ink ghosts of poems past. Micro-tensions layer: pulse visible at throat, lips parting on silent comprehension, fan forgotten in lap curling slightly. Silk cushions occupy foreground hush, vanity mirror reflects fragmented lantern glow midground, dissolving into brothel murmurs beyond; Go board's echo lingers in her shadowed gaze, stones' glossy wear mirrored in her enlightened eyes; cinematic still, Tang Dynasty China, intimate candlelit glow, 35mm film grain.",
+          "characters": [
+            "Mei"
+          ],
+          "duration": 3.5
+        }
+      ]
+    },
+    {
+      "scene_number": 12,
+      "beat": "Lin reads note at florist shop by lantern light, unveiling his secret noble heritage and love for Mei.",
+      "location": "FLORIST SHOP",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[12.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "wide shot from shop entrance, framing humble wooden structure interior",
+          "prompt": "Camera in wide shot from the weathered shop entrance, encompassing the humble wooden confines where flower buckets line pressed dirt floor, Lin centered at rough-hewn table under swaying lantern. Lin, humble florist with weathered hands and kind eyes, unfolds the note with tentative fingers, face illuminated as secret noble heritage and love for Mei unveil, shoulders squaring subtly under simple cotton robes, gaze lifting from paper to unfocused horizon. Foreground crowds with wilting lotus blooms drooping in buckets soft-focused, midground sharpens note's inked revelations amid scattered petals, background layers wooden beams scarred by seasons into dusk-veiled mountains distant. Lantern light surges as revelatory force, bathing his lined face in honeyed warmth that catches threads in cotton collar, casting petal shadows dancing across dirt floor strewn with pressed earth grit. Textures vivid: cotton robes patched at elbows with visible stitching wear, paper note crinkled and ink-faded, wooden table gouged from knife work, flower stems fibrous and thorn-pricked. Micro-tensions: knuckles blanching on paper edge, breath catching as eyes trace lineage script, lips curving in dawning smile. Buckets occupy lower third haze, table midground anchors heritage scroll, dissolving into night-shrouded road beyond open door; jade-green leaves catch glow, gold accents faint in imagined nobility; cinematic still, Tang Dynasty China, warm lantern haze, 35mm film grain.",
+          "characters": [
+            "Lin"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[12.2.cA]",
+          "shot_type": "MCU",
+          "camera_position": "medium close-up three-quarter from camera left at chest height",
+          "prompt": "Camera positioned medium close-up three-quarter from camera left at chest height, centered on Lin's face as lantern light unveils the note's truths of noble blood and unspoken love for Mei. Kind eyes widen beneath furrowed brow, weathered hands cradle paper with micro-tremor, fingers tracing calligraphy revealing heritage, lips parting on silent wonder, cotton robe's collar shifting with accelerated pulse. Foreground softens lantern cord swaying gently, midground locks on note's elegant script and his illuminated profile, background blurs flower buckets into verdant bokeh pierced by wooden slats. Lantern glow invades as emotional tide, flooding cheekbones with golden rivulets that thread individual hairs in beard stubble, hurling table's petal debris into flickering shadow play. Material textures intimate: cotton weave coarse and sun-faded with mend marks, paper brittle-edged from secretive folds, dirt floor compacted with boot prints and petal dust. Micro-tensions build: jaw tightening then softening, gaze flickering from note to Mei's imagined form, hand rising to touch jade pendant hidden beneath robe. Petals scatter foreground hush, note dominates midground revelation, shop eaves recede to starry void; noble silk memories clash humble reality in his enlightened eyes; cinematic still, Tang Dynasty China, flickering lantern intimacy, 35mm film grain.",
+          "characters": [
+            "Lin"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[12.3.cB]",
+          "shot_type": "CU",
+          "camera_position": "close-up from above note, looking down at Lin's hands",
+          "prompt": "Camera in close-up from directly above the note on table, gazing down at Lin's weathered hands unveiling noble heritage script and Mei's name entwined in love's confession, lantern light pooling thereon. Fingers splay with restrained awe, thumbs pressing edges where ink bleeds faintly, veins prominent under skin toughened by earth toil, subtle quiver betraying heart's upheaval. Foreground captures petal fragment adhered to paper in razor focus, midground expands to hands' calluses cradling revelation, background fades table grain into lantern's hazy corona. Light from swaying lantern acts as awakening force, drenching inked characters in liquid gold that ignites cotton sleeve cuffs with threadbare highlights, casting elongated finger shadows across dirt-strewn wood. Textures layered: paper crinkled with secretive creases and wax seal remnants, hands scarred from thorns with dirt under nails, table lacquerless and knot-veined from years' service. Micro-tensions: pinky curls involuntarily, knuckles flexing as love's weight sinks in, breath's warmth fogging edge faintly. Flower buckets frame lower depth softly, note's calligraphy pierces midground heart, shop's thatched roof hints starry night beyond; gold jewelry imagined in heritage gleam contrasts humble palms; cinematic still, Tang Dynasty China, overhead lantern pool, 35mm film grain.",
+          "characters": [
+            "Lin"
+          ],
+          "duration": 2.5
+        }
+      ]
+    },
+    {
+      "scene_number": 13,
+      "beat": "Mei wins Go wager; Min Zhu concedes, stakes clear as freedom matches her savings.",
+      "location": "MEI'S BEDROOM",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[13.1.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot over Mei's shoulder toward Go board",
+          "prompt": "Camera positioned medium shot over Mei's slender shoulder, looking past her jade-pinned hair toward the Go board where her final white stone seals victory, stakes of freedom matching savings now clear. Mei leans forward with poised grace, melancholic eyes alight with triumph, fingers placing stone decisively, hanfu silk rippling at arms. Min Zhu slumps opposite, corpulent form deflating in concession, hand waving surrender amid flashy robes. Foreground veils her embroidered collar in soft silk sheen, midground crystallizes board's territorial conquest with stones encircled, background blurs latticed window to courtyard lanterns. Lantern light triumphs as victorious surge, flooding board in radiant pools that catch jade comb glints and Min Zhu's gold rings dully, shadowing his strained silk into defeat's fold. Textures rich: Go stones glossy-worn from play, silk robes frayed at Min Zhu's cuffs with dragon embroidery unraveling, lacquered table etched faintly. Micro-tensions: Mei's breath releases in quiet exhale, Min Zhu's jowls quiver on nod. Cushions foreground hush, board midground battlefield won, screens dissolve to night; cinematic still, Tang Dynasty China, triumphant lantern glow, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Min Zhu"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[13.2.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up centered on Go board from table level",
+          "prompt": "Camera in close-up centered on Go board from table level, capturing Mei's winning stone amid white dominance over Min Zhu's blundered blacks, wager's freedom stakes etched in pattern's clarity. Stones cluster in final encirclement, white capturing black voids representing bankruptcy-conceded savings. Foreground sharpens decisive white stone's polish, midground maps gridlines of strategy won, background hints players' shadows. Lantern flicker animates as conclusive force, rippling light across ebony-white contrasts, illuminating wear-pits and wood grain scars. Textures dominate: stones smooth generations-worn, lines incised deep with use, table lacquer chipped. No hands intrude, tension in frozen battle; cushions peek foreground, lattice glows beyond; cinematic still, Tang Dynasty China, strategic lantern flicker, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Min Zhu"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[13.3.cB]",
+          "shot_type": "MCU",
+          "camera_position": "medium close-up three-quarter on Min Zhu's face",
+          "prompt": "Camera positioned medium close-up three-quarter on Min Zhu's corpulent face conceding defeat, eyes downcast in resignation as freedom slips to Mei's savings-match. Jowls sag, lips mutter concession, gold jewelry dull under light, flashy silk collar sweat-stained. Foreground softens ringed hand gesturing defeat, midground his flushed features, background Mei's triumphant silhouette. Lantern light recedes as humbling force, dimming his opulence to shadowed folds, highlighting weave flaws. Textures: silk heavy-frayed, rings etched worn, skin oiled-weathered. Micro-tension: sigh escapes, gaze avoids hers; board reflects loss; cinematic still, Tang Dynasty China, dimming lantern defeat, 35mm film grain.",
+          "characters": [
+            "Min Zhu",
+            "Mei"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[13.4.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up on Mei's face from front",
+          "prompt": "Camera in close-up on Mei's pale face, melancholic beauty radiant in victory, eyes gleaming with freedom's promise as wager concludes. Chin lifts, jade pins catch light, lips curve subtle smile. Foreground her embroidered collar threads, midground porcelain skin, background board haze. Lantern glow elevates as liberating force, gilding cheekbones, threading hair silks. Textures: hanfu raw-weave, jade filigreed-dulled. Micro-tension: breath steadies triumphantly; cinematic still, Tang Dynasty China, victorious close lantern, 35mm film grain.",
+          "characters": [
+            "Mei"
+          ],
+          "duration": 2.5
+        }
+      ]
+    },
+    {
+      "scene_number": 14,
+      "beat": "Zhoa storms Lu Xian, exposing Madame Chou's rigged auction favoring Min Zhu's bribes.",
+      "location": "LU XIAN BROTHEL",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[14.1.cA]",
+          "shot_type": "EWS",
+          "camera_position": "extreme wide from courtyard entrance, sweeping multi-story facade",
+          "prompt": "Camera in extreme wide from courtyard entrance, framing Lu Xian brothel's wooden pavilion as Zhoa storms threshold, military uniform commanding under lanterns. Zhoa strides stern-faced, exposing rigged auction, Madame Chou recoils in elaborate silks nearby, Min Zhu shrinks. Foreground lanterns sway, midground doors burst open, background paper screens illuminate. Lanterns blaze as accusatory force, gilding Zhoa's armor, shadowing Chou's jade rings. Textures: uniform crisp-creased, silks ornate-frayed. Micro-tension: Zhoa's fist clenched; cinematic still, Tang Dynasty China, stormy lantern blaze, 35mm film grain.",
+          "characters": [
+            "Zhoa",
+            "Madame Chou",
+            "Min Zhu"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[14.2.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot facing Zhoa head-on at waist level",
+          "prompt": "Camera positioned medium shot facing Zhoa head-on at waist level, capturing his storming advance exposing bribes, stern face unyielding, uniform arms visible gesturing accusation. Foreground lantern glows, midground his commanding presence, background Chou's calculating gaze falters. Light thrusts forward, etching uniform textures worn from campaigns, casting Chou's silks to shadow. Jade rings glint desperately; micro-tension: jaw set; cinematic still, Tang Dynasty China, confrontational lantern thrust, 35mm film grain.",
+          "characters": [
+            "Zhoa",
+            "Madame Chou"
+          ],
+          "duration": 3.0
+        },
+        {
+          "frame_id": "[14.3.cB]",
+          "shot_type": "OTS",
+          "camera_position": "over-the-shoulder from Madame Chou toward Zhoa",
+          "prompt": "Camera over Madame Chou's shoulder, looking past jade-ringed hand toward Zhoa's exposing tirade, her calculating eyes widen in shock. Foreground silk shoulder, midground Zhoa's stern accusation, background brothel chaos. Lanterns probe guiltily, illuminating ring etchings, shadowing Zhoa's form. Textures: silks elaborate-worn, uniform stern; micro-tension: Chou's flinch; cinematic still, Tang Dynasty China, exposing OTS lantern, 35mm film grain.",
+          "characters": [
+            "Madame Chou",
+            "Zhoa"
+          ],
+          "duration": 3.5
+        }
+      ]
+    },
+    {
+      "scene_number": 15,
+      "beat": "Mei reunites with Lin on pressed dirt road, embracing under stars with newfound truths.",
+      "location": "PRESSED DIRT ROAD",
+      "time_of_day": "night",
+      "frames": [
+        {
+          "frame_id": "[15.1.cA]",
+          "shot_type": "WS",
+          "camera_position": "wide shot from roadside lantern, framing road under stars",
+          "prompt": "Camera in wide shot from roadside lantern, encompassing pressed dirt road where Mei and Lin reunite embracing, truths unveiled under starry vault, wooden buildings flank distant mountains. Mei in flowing hanfu presses to Lin's cotton robes, arms entwining, faces close in joy. Foreground dirt ruts soft, midground their full figures merge, background lanterns dot eaves. Starlight and lanterns weave tenderly, gilding silks and cottons, veiling mountains in umber. Textures: dirt compacted-bootworn, robes mismatched yet harmonious; micro-tension: hesitant then firm clasp; cinematic still, Tang Dynasty China, starry lantern embrace, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Lin"
+          ],
+          "duration": 4.0
+        },
+        {
+          "frame_id": "[15.2.cA]",
+          "shot_type": "MS",
+          "camera_position": "medium shot three-quarter circling embrace",
+          "prompt": "Camera positioned medium shot three-quarter around Mei and Lin's waist-up embrace, her jade pins against his kind eyes, truths binding them. Hands grip tenderly, faces nuzzle. Foreground lantern fringe, midground torsos meld, background road fades. Light caresses intimately, threading collar weaves. Textures: hanfu smooth-imperfect, cotton patched; micro-tension: shared breath; cinematic still, Tang Dynasty China, emotional lantern caress, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Lin"
+          ],
+          "duration": 3.5
+        },
+        {
+          "frame_id": "[15.3.cA]",
+          "shot_type": "CU",
+          "camera_position": "close-up on their faces pressed close",
+          "prompt": "Camera in close-up on Mei and Lin's faces pressed cheek-to-cheek under stars, melancholic beauty meets kind gaze, lips curve in whispered truths. Foreground faint jade glint, midground profiles glow, background star-pricked sky. Lantern-starlight unites softly, illuminating skin textures. Micro-tension: eyes lock eternally; cinematic still, Tang Dynasty China, starry close intimacy, 35mm film grain.",
+          "characters": [
+            "Mei",
+            "Lin"
+          ],
+          "duration": 3.0
+        }
+      ]
+    }
+  ],
+  "total_frames": 47
+}

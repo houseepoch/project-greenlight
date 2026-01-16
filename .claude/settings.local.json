@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(touch:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(cd:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Bash(dir \"C:\\\\Users\\\\thriv\\\\Documents\\\\Demo-Greenlight\" /s /b)",
+      "Bash(dir \"C:\\\\Users\\\\thriv\\\\Documents\\\\greenlight\\\\Project_Greenlight\" /s /b /ad)",
+      "Bash(findstr:*)",
+      "Bash(python -c:*)",
+      "Bash(python test_ingestion.py:*)",
+      "Bash(python test_world_builder.py:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(python test_outline_generator.py:*)",
+      "Bash(python:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(tree:*)",
+      "Bash(python3:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Skill(sync-context)",
+      "Skill(sync-context:*)",
+      "Bash(dir:*)",
+      "Skill(quora)",
+      "Skill(quora:*)"
+    ],
+    "deny": []
+  },
+  "allowedPaths": [
+    "C:\\Users\\thriv\\Documents\\project-greenlight\\**"
+  ]
+}

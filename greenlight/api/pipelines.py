@@ -211,13 +211,14 @@ async def run_director_pipeline(
     """
     Run the Director pipeline.
 
-    Transforms script into visual script with shot-by-shot breakdown.
+    Transforms confirmed outline beats into visual frames with cinematic prompts.
+    Each beat becomes a scene with 2-5 frames for image generation.
     """
     pipeline_id = f"director_{request.project_path}"
     _init_status(pipeline_id, "director", [
-        "Load Script",
-        "Analyze Scenes",
-        "Generate Visual Script",
+        "Load Confirmed Outline",
+        "Load World Config",
+        "Generate Frames",
         "Save Outputs"
     ])
 
@@ -514,15 +515,19 @@ async def get_outline_variants(project_path: str):
         return {"success": False, "error": str(e)}
 
 
+class SelectVariantRequest(BaseModel):
+    """Request to select an outline variant."""
+    project_path: str
+    variant_key: str
+
+
 @router.post("/outlines/select")
-async def select_outline_variant(
-    project_path: str = "",
-    variant_key: str = "",
-):
+async def select_outline_variant(request: SelectVariantRequest):
     """Select a variant as the starting point for editing."""
     import json
 
-    project_dir = Path(project_path)
+    project_dir = Path(request.project_path)
+    variant_key = request.variant_key
     outlines_path = project_dir / "outlines" / "outline_variants.json"
 
     if not outlines_path.exists():
@@ -550,18 +555,19 @@ async def select_outline_variant(
         return {"success": False, "error": str(e)}
 
 
+class UpdateBeatsRequest(BaseModel):
+    """Request to update outline beats."""
+    project_path: str
+    beats: list[str] = []
+
+
 @router.post("/outlines/update-beats")
-async def update_outline_beats(
-    project_path: str = "",
-    beats: list[str] = None,
-):
+async def update_outline_beats(request: UpdateBeatsRequest):
     """Update the confirmed beats (after user editing)."""
     import json
 
-    if beats is None:
-        beats = []
-
-    project_dir = Path(project_path)
+    project_dir = Path(request.project_path)
+    beats = request.beats
     outlines_path = project_dir / "outlines" / "outline_variants.json"
 
     if not outlines_path.exists():
@@ -582,13 +588,18 @@ async def update_outline_beats(
         return {"success": False, "error": str(e)}
 
 
+class ConfirmOutlineRequest(BaseModel):
+    """Request to confirm an outline."""
+    project_path: str
+
+
 @router.post("/outlines/confirm")
-async def confirm_outline(project_path: str = ""):
+async def confirm_outline(request: ConfirmOutlineRequest):
     """Confirm the outline and prepare for Director pipeline."""
     import json
     from datetime import datetime
 
-    project_dir = Path(project_path)
+    project_dir = Path(request.project_path)
     outlines_path = project_dir / "outlines" / "outline_variants.json"
 
     if not outlines_path.exists():
@@ -708,7 +719,7 @@ async def _execute_world_builder_pipeline(pipeline_id: str, request: PipelineReq
             asyncio.create_task(_auto_generate_references(
                 project_path=request.project_path,
                 visual_style=request.visual_style,
-                image_model=request.image_model or "flux_2_pro"
+                image_model=request.image_model or "z_image_turbo"
             ))
         else:
             _complete(pipeline_id, success=False, error=result.get("error", "Unknown error"))
@@ -1068,7 +1079,7 @@ async def list_references(project_path: str):
 async def regenerate_reference(
     project_path: str,
     tag: str,
-    image_model: str = "flux_2_pro",
+    image_model: str = "z_image_turbo",
 ):
     """
     Regenerate a single entity's reference image.
@@ -1129,7 +1140,7 @@ async def generate_single_reference(
 
     Body should contain:
     - tag: entity tag (e.g., CHAR_MARCUS)
-    - model: image model to use (default: flux_2_pro)
+    - model: image model to use (default: z_image_turbo)
     - overwrite: whether to overwrite existing (default: false)
     """
     import json
@@ -1139,7 +1150,7 @@ async def generate_single_reference(
     world_config_path = project_dir / "world_bible" / "world_config.json"
 
     tag = body.get("tag", "")
-    model = body.get("model", "flux_2_pro")
+    model = body.get("model", "z_image_turbo")
     overwrite = body.get("overwrite", False)
 
     if not tag:

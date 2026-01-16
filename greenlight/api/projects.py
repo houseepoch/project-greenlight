@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, File, UploadFile
 from pydantic import BaseModel
 
 from greenlight.core.config import settings
@@ -187,14 +187,34 @@ async def create_project_alt(request: ProjectCreate) -> dict:
 
 @router.get("/path-data/world")
 async def get_world_by_path(path: str) -> dict:
-    """Get world config by full project path (passed as query param)."""
+    """Get world config by full project path (passed as query param).
+
+    Dynamically adds imagePath for each entity based on whether
+    the reference image exists in the references/ directory.
+    """
     project_path = Path(path)
     config_path = project_path / "world_bible" / "world_config.json"
 
     if not config_path.exists():
         return {"characters": [], "locations": [], "props": [], "world_context": {}}
 
-    return json.loads(config_path.read_text(encoding="utf-8"))
+    world_config = json.loads(config_path.read_text(encoding="utf-8"))
+    refs_dir = project_path / "references"
+
+    # Add imagePath to each entity if reference image exists
+    for entity_type in ["characters", "locations", "props"]:
+        entities = world_config.get(entity_type, [])
+        for entity in entities:
+            tag = entity.get("tag", "")
+            if tag:
+                ref_path = refs_dir / f"{tag}.png"
+                if ref_path.exists():
+                    # Use absolute path for the image API
+                    entity["imagePath"] = str(ref_path)
+                else:
+                    entity["imagePath"] = None
+
+    return world_config
 
 
 @router.get("/path-data/prompts")
@@ -251,6 +271,98 @@ async def update_entity_by_path(entity_tag: str, body: dict, path: str) -> dict:
     return {"success": True}
 
 
+@router.patch("/path-data/world/context/{field_key}")
+async def update_world_context_field(field_key: str, body: dict, path: str) -> dict:
+    """Update a single world context field by project path."""
+    project_path = Path(path)
+    config_path = project_path / "world_bible" / "world_config.json"
+
+    if not config_path.exists():
+        raise HTTPException(status_code=404, detail="World config not found")
+
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+
+    # Ensure world_context exists
+    if "world_context" not in config:
+        config["world_context"] = {}
+
+    # Valid field keys
+    valid_fields = {
+        "setting", "time_period", "cultural_context", "social_structure",
+        "technology_level", "clothing_norms", "architecture_style",
+        "color_palette", "lighting_style", "mood"
+    }
+
+    if field_key not in valid_fields:
+        raise HTTPException(status_code=400, detail=f"Invalid field key: {field_key}")
+
+    # Update the field
+    new_value = body.get("value", "")
+    config["world_context"][field_key] = new_value
+
+    # Save updated config
+    config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+
+    return {"success": True, "field": field_key, "value": new_value}
+
+
+@router.put("/path-data/visual-style")
+async def update_visual_style(body: dict, path: str) -> dict:
+    """Update the visual style of a project by project path."""
+    project_path = Path(path)
+    config_path = project_path / "world_bible" / "world_config.json"
+
+    new_style = body.get("visual_style", "live_action")
+
+    # Valid visual styles
+    valid_styles = {
+        "live_action", "anime", "animation_2d", "animation_3d",
+        "cartoon", "claymation", "mixed"
+    }
+
+    if new_style not in valid_styles:
+        raise HTTPException(status_code=400, detail=f"Invalid visual style: {new_style}")
+
+    # Update world_config.json if it exists
+    if config_path.exists():
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        config["visual_style"] = new_style
+        config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+
+    # Also update project.json
+    project_config_path = project_path / "project.json"
+    if project_config_path.exists():
+        project_config = json.loads(project_config_path.read_text(encoding="utf-8"))
+        project_config["visual_style"] = new_style
+        project_config["last_modified"] = datetime.now().isoformat()
+        project_config_path.write_text(json.dumps(project_config, indent=2), encoding="utf-8")
+
+    return {"success": True, "visual_style": new_style}
+
+
+@router.delete("/path-data/project")
+async def delete_project_by_path(path: str) -> dict:
+    """Delete a project by full project path (passed as query param).
+
+    This permanently removes the project directory and all its contents.
+    """
+    import shutil
+
+    project_path = Path(path)
+
+    if not project_path.exists():
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Verify it's actually a project directory (has project.json)
+    if not (project_path / "project.json").exists():
+        raise HTTPException(status_code=400, detail="Not a valid project directory")
+
+    # Remove directory and all contents
+    shutil.rmtree(project_path)
+
+    return {"success": True, "message": f"Project deleted: {project_path.name}"}
+
+
 @router.put("/path-data/pitch")
 async def update_pitch_by_path(body: dict, path: str) -> dict:
     """Update pitch by full project path (path passed as query param)."""
@@ -283,6 +395,178 @@ async def get_pitch_by_path(path: str) -> dict:
         return {"content": ""}
 
     return {"content": pitch_path.read_text(encoding="utf-8")}
+
+
+# =============================================================================
+# URL-path-based storyboard routes (for frontend that sends encoded paths in URL)
+# Pattern: /encoded_path/storyboard where encoded_path could be full project path
+# =============================================================================
+
+@router.get("/{project_path:path}/storyboard")
+async def get_storyboard_by_url_path(project_path: str) -> dict:
+    """Get storyboard frames and visual script.
+
+    Handles both project names and full paths (URL-decoded).
+    Returns frames from prompts.json (card UI format) and visual_script.json.
+    """
+    from urllib.parse import unquote
+
+    # URL decode the path
+    decoded_path = unquote(project_path)
+
+    # Check if it's a full path or just a project name
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        # Try as project name in default directory
+        project_dir = settings.projects_dir / decoded_path
+
+    storyboard_dir = project_dir / "storyboard"
+    output_dir = project_dir / "storyboard_output" / "generated"
+
+    frames = []
+    visual_script = None
+
+    # Load prompts.json (preferred) or generate from visual_script.json
+    prompts_path = storyboard_dir / "prompts.json"
+    vs_path = storyboard_dir / "visual_script.json"
+
+    if prompts_path.exists():
+        prompts_data = json.loads(prompts_path.read_text(encoding="utf-8"))
+        # Handle both list format (new) and dict format (legacy)
+        prompts_list = prompts_data if isinstance(prompts_data, list) else prompts_data.get("prompts", [])
+
+        for prompt in prompts_list:
+            frame_id = prompt.get("frame_id", "")
+            # Parse frame_id: [scene.frame.camera] format
+            # Remove brackets and split
+            clean_id = frame_id.strip("[]")
+            parts = clean_id.split(".")
+            scene_num = int(parts[0]) if parts else 1
+            frame_num = int(parts[1]) if len(parts) > 1 else 1
+            camera = parts[2] if len(parts) > 2 else "cA"
+
+            # Check if image exists
+            image_path = output_dir / f"{clean_id}.png"
+            if not image_path.exists():
+                # Try alternative naming
+                image_path = output_dir / f"{frame_id}.png"
+
+            frames.append({
+                "id": frame_id,
+                "scene": scene_num,
+                "frame": frame_num,
+                "camera": camera,
+                "prompt": prompt.get("prompt", ""),
+                "imagePath": str(image_path) if image_path.exists() else None,
+                "tags": _extract_tags_from_prompt(prompt),
+                "camera_notation": prompt.get("shot_type", "MS"),
+                "characters": prompt.get("characters", []),
+                "generated": prompt.get("generated", image_path.exists()),
+                "word_count": prompt.get("word_count", len(prompt.get("prompt", "").split())),
+            })
+
+    # Load visual_script for scene metadata
+    if vs_path.exists():
+        visual_script = json.loads(vs_path.read_text(encoding="utf-8"))
+
+    return {
+        "frames": frames,
+        "visual_script": visual_script,
+    }
+
+
+def _extract_tags_from_prompt(prompt: dict) -> list[str]:
+    """Extract all tags from a prompt's characters, locations, etc."""
+    tags = []
+    characters = prompt.get("characters", [])
+    if isinstance(characters, list):
+        tags.extend(characters)
+    # Add location tags if present
+    if prompt.get("location"):
+        tags.append(prompt.get("location"))
+    return tags
+
+
+@router.post("/{project_path:path}/storyboard/frame/update-prompt")
+async def update_frame_prompt_by_url_path(project_path: str, body: dict) -> dict:
+    """Update a single frame's prompt by URL path."""
+    from urllib.parse import unquote
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    prompts_path = project_dir / "storyboard" / "prompts.json"
+
+    frame_id = body.get("frame_id", "")
+    new_prompt = body.get("prompt", "")
+
+    if not frame_id:
+        return {"success": False, "error": "frame_id is required"}
+
+    if not prompts_path.exists():
+        return {"success": False, "error": "No prompts.json found"}
+
+    prompts_data = json.loads(prompts_path.read_text(encoding="utf-8"))
+    prompts_list = prompts_data if isinstance(prompts_data, list) else prompts_data.get("prompts", [])
+
+    # Find and update the frame
+    updated = False
+    for prompt in prompts_list:
+        if prompt.get("frame_id") == frame_id:
+            prompt["prompt"] = new_prompt
+            prompt["word_count"] = len(new_prompt.split())
+            prompt["generated"] = False  # Mark as not generated since prompt changed
+            updated = True
+            break
+
+    if not updated:
+        return {"success": False, "error": f"Frame {frame_id} not found"}
+
+    # Save updated prompts
+    if isinstance(prompts_data, list):
+        prompts_path.write_text(json.dumps(prompts_list, indent=2), encoding="utf-8")
+    else:
+        prompts_data["prompts"] = prompts_list
+        prompts_path.write_text(json.dumps(prompts_data, indent=2), encoding="utf-8")
+
+    return {"success": True, "message": f"Updated prompt for {frame_id}"}
+
+
+@router.post("/{project_path:path}/storyboard/frame/regenerate")
+async def regenerate_frame_by_url_path(project_path: str, body: dict) -> dict:
+    """Regenerate a single storyboard frame by URL path."""
+    from urllib.parse import unquote
+    from greenlight.pipelines.storyboard import StoryboardPipeline
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    frame_id = body.get("frame_id", "")
+
+    if not frame_id:
+        return {"success": False, "error": "frame_id is required"}
+
+    try:
+        pipeline = StoryboardPipeline(
+            project_path=project_dir,
+            image_model=body.get("image_model", "flux_2_pro"),
+        )
+
+        result = await pipeline.generate_single_frame(frame_id, force=True)
+        return result
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 # General path-based endpoint for getting project info
@@ -415,8 +699,207 @@ async def get_visual_script(project_name: str) -> dict:
 
 
 # =============================================================================
+# Storyboard Routes (path-based via query param)
+# =============================================================================
+
+@router.get("/path-data/storyboard")
+async def get_storyboard_by_path(path: str) -> dict:
+    """Get storyboard frames and visual script by project path.
+
+    Returns frames from prompts.json (card UI format) and visual_script.json.
+    Frames include generated status and image paths.
+    """
+    project_path = Path(path)
+    storyboard_dir = project_path / "storyboard"
+    output_dir = project_path / "storyboard_output" / "generated"
+
+    frames = []
+    visual_script = None
+
+    # Load prompts.json (preferred) or generate from visual_script.json
+    prompts_path = storyboard_dir / "prompts.json"
+    vs_path = storyboard_dir / "visual_script.json"
+
+    if prompts_path.exists():
+        prompts_data = json.loads(prompts_path.read_text(encoding="utf-8"))
+        # Handle both list format (new) and dict format (legacy)
+        prompts_list = prompts_data if isinstance(prompts_data, list) else prompts_data.get("prompts", [])
+
+        for prompt in prompts_list:
+            frame_id = prompt.get("frame_id", "")
+            # Parse frame_id: [scene.frame.camera] format
+            # Remove brackets and split
+            clean_id = frame_id.strip("[]")
+            parts = clean_id.split(".")
+            scene_num = int(parts[0]) if parts else 1
+            frame_num = int(parts[1]) if len(parts) > 1 else 1
+            camera = parts[2] if len(parts) > 2 else "cA"
+
+            # Check if image exists
+            image_path = output_dir / f"{clean_id}.png"
+            if not image_path.exists():
+                # Try alternative naming
+                image_path = output_dir / f"{frame_id}.png"
+
+            frames.append({
+                "id": frame_id,
+                "scene": scene_num,
+                "frame": frame_num,
+                "camera": camera,
+                "prompt": prompt.get("prompt", ""),
+                "imagePath": str(image_path) if image_path.exists() else None,
+                "tags": _extract_tags(prompt),
+                "camera_notation": prompt.get("shot_type", "MS"),
+                "characters": prompt.get("characters", []),
+                "generated": prompt.get("generated", image_path.exists()),
+                "word_count": prompt.get("word_count", len(prompt.get("prompt", "").split())),
+            })
+
+    # Load visual_script for scene metadata
+    if vs_path.exists():
+        visual_script = json.loads(vs_path.read_text(encoding="utf-8"))
+
+    return {
+        "frames": frames,
+        "visual_script": visual_script,
+    }
+
+
+def _extract_tags(prompt: dict) -> list[str]:
+    """Extract all tags from a prompt's characters, locations, etc."""
+    tags = []
+    characters = prompt.get("characters", [])
+    if isinstance(characters, list):
+        tags.extend(characters)
+    # Add location tags if present
+    if prompt.get("location"):
+        tags.append(prompt.get("location"))
+    return tags
+
+
+@router.post("/path-data/storyboard/frame/update-prompt")
+async def update_frame_prompt_by_path(body: dict, path: str) -> dict:
+    """Update a single frame's prompt by project path."""
+    project_path = Path(path)
+    prompts_path = project_path / "storyboard" / "prompts.json"
+
+    frame_id = body.get("frame_id", "")
+    new_prompt = body.get("prompt", "")
+
+    if not frame_id:
+        return {"success": False, "error": "frame_id is required"}
+
+    if not prompts_path.exists():
+        return {"success": False, "error": "No prompts.json found"}
+
+    prompts_data = json.loads(prompts_path.read_text(encoding="utf-8"))
+    prompts_list = prompts_data if isinstance(prompts_data, list) else prompts_data.get("prompts", [])
+
+    # Find and update the frame
+    updated = False
+    for prompt in prompts_list:
+        if prompt.get("frame_id") == frame_id:
+            prompt["prompt"] = new_prompt
+            prompt["word_count"] = len(new_prompt.split())
+            prompt["generated"] = False  # Mark as not generated since prompt changed
+            updated = True
+            break
+
+    if not updated:
+        return {"success": False, "error": f"Frame {frame_id} not found"}
+
+    # Save updated prompts
+    if isinstance(prompts_data, list):
+        prompts_path.write_text(json.dumps(prompts_list, indent=2), encoding="utf-8")
+    else:
+        prompts_data["prompts"] = prompts_list
+        prompts_path.write_text(json.dumps(prompts_data, indent=2), encoding="utf-8")
+
+    return {"success": True, "message": f"Updated prompt for {frame_id}"}
+
+
+@router.post("/path-data/storyboard/frame/regenerate")
+async def regenerate_frame_by_path(body: dict, path: str) -> dict:
+    """Regenerate a single storyboard frame by project path."""
+    from greenlight.pipelines.storyboard import StoryboardPipeline
+
+    project_path = Path(path)
+    frame_id = body.get("frame_id", "")
+
+    if not frame_id:
+        return {"success": False, "error": "frame_id is required"}
+
+    try:
+        pipeline = StoryboardPipeline(
+            project_path=project_path,
+            image_model=body.get("image_model", "flux_2_pro"),
+        )
+
+        result = await pipeline.generate_single_frame(frame_id, force=True)
+        return result
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# =============================================================================
 # Reference Generation Routes (path-based via query param)
 # =============================================================================
+
+@router.post("/path-data/references/upload")
+async def upload_reference_by_path(
+    file: UploadFile = File(...),
+    path: str = "",
+    tag: str = "",
+) -> dict:
+    """Upload a reference image for an entity by project path.
+
+    Accepts PNG, JPEG, and WebP images.
+    Saves as {tag}.png in the references directory.
+    """
+    import shutil
+    from PIL import Image
+    import io
+
+    if not path:
+        return {"success": False, "error": "path is required"}
+
+    if not tag:
+        return {"success": False, "error": "tag is required"}
+
+    project_path = Path(path)
+    refs_dir = project_path / "references"
+    refs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Validate file type
+    valid_types = ["image/png", "image/jpeg", "image/jpg", "image/webp"]
+    if file.content_type not in valid_types:
+        return {"success": False, "error": f"Invalid file type: {file.content_type}. Accepts PNG, JPEG, WebP."}
+
+    try:
+        # Read file content
+        content = await file.read()
+
+        # Open image and convert to PNG
+        image = Image.open(io.BytesIO(content))
+
+        # Convert to RGB if necessary (for RGBA or palette images)
+        if image.mode in ('RGBA', 'P'):
+            image = image.convert('RGB')
+
+        # Save as PNG
+        ref_path = refs_dir / f"{tag}.png"
+        image.save(ref_path, 'PNG')
+
+        return {
+            "success": True,
+            "message": f"Reference uploaded for {tag}",
+            "path": str(ref_path),
+        }
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 @router.post("/path-data/references/generate")
 async def generate_reference_by_path(body: dict, path: str) -> dict:
@@ -427,7 +910,7 @@ async def generate_reference_by_path(body: dict, path: str) -> dict:
     world_config_path = project_path / "world_bible" / "world_config.json"
 
     tag = body.get("tag", "")
-    model = body.get("model", "flux_2_pro")
+    model = body.get("model", "z_image_turbo")
     overwrite = body.get("overwrite", False)
 
     if not tag:

@@ -1,0 +1,45 @@
+{
+  "project_name": "project-greenlight",
+  "version": "1.0.0",
+  "modes": {
+    "default": {
+      "code_modification": true,
+      "file_creation": true,
+      "planning": true,
+      "simulation": true
+    },
+    "quora": {
+      "code_modification": false,
+      "file_creation": false,
+      "planning": true,
+      "simulation": false,
+      "personality": "fun, cute, adventurous, supportive"
+    },
+    "walkthrough": {
+      "code_modification": false,
+      "file_creation": false,
+      "planning": true,
+      "simulation": true
+    }
+  },
+  "checkpoint": {
+    "auto_interval_minutes": 15,
+    "triggers": [
+      "significant_change",
+      "task_state_change",
+      "mode_switch",
+      "before_pause"
+    ]
+  },
+  "logging": {
+    "conversation_log": true,
+    "changelog": true,
+    "decision_log": true,
+    "trace_index": true
+  },
+  "consent_protocol": {
+    "pause_symbol": "⏸",
+    "double_confirm_symbol": "⏸⏸",
+    "require_approval_for_complete": true
+  }
+}

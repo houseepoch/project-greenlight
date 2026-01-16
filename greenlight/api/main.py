@@ -62,6 +62,35 @@ async def get_settings():
     }
 
 
+@app.get("/api/settings/storyboard-models")
+async def get_storyboard_models():
+    """Get available image generation models for storyboard generation."""
+    models = [
+        {
+            "key": "flux_2_pro",
+            "display_name": "Flux 2 Pro",
+            "provider": "Replicate",
+            "description": "High quality, up to 8 reference images. Best for character consistency.",
+            "default": True,
+        },
+        {
+            "key": "seedream",
+            "display_name": "Seedream 4.5",
+            "provider": "Replicate",
+            "description": "Fast, up to 14 reference images. Great character likeness preservation.",
+            "default": False,
+        },
+        {
+            "key": "nano_banana_pro",
+            "display_name": "Nano Banana Pro",
+            "provider": "Replicate",
+            "description": "Fast generation with good quality. Supports reference images.",
+            "default": False,
+        },
+    ]
+    return {"models": models}
+
+
 def start_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
     """Start the FastAPI server."""
     uvicorn.run(

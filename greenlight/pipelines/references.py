@@ -10,6 +10,9 @@ Reference images can be:
 1. Auto-generated from entity description
 2. Uploaded/replaced by user
 
+Labels are added to reference images with yellow text and black outline
+to clearly identify entities in the generated references.
+
 TRACE: REFERENCES-001
 """
 
@@ -25,12 +28,133 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# REFERENCE IMAGE LABELING
+# =============================================================================
+
+def add_label_to_image(image_path: Path, label: str, position: str = "top") -> bool:
+    """
+    Add a yellow text label with black outline to a reference image.
+
+    Args:
+        image_path: Path to the image file
+        label: Text to display (e.g., entity name or tag)
+        position: "top" or "bottom"
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+
+        img = Image.open(image_path)
+        draw = ImageDraw.Draw(img)
+
+        # Calculate font size based on image width (roughly 5% of width)
+        img_width, img_height = img.size
+        font_size = max(24, int(img_width * 0.06))
+
+        # Try to use a system font, fall back to default
+        font = None
+        try:
+            # Try common fonts on different systems
+            font_names = [
+                "arial.ttf", "Arial.ttf", "Arial Bold.ttf",
+                "DejaVuSans-Bold.ttf", "DejaVuSans.ttf",
+                "Helvetica.ttf", "Helvetica-Bold.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "C:/Windows/Fonts/arial.ttf",
+                "C:/Windows/Fonts/arialbd.ttf",
+            ]
+            for font_name in font_names:
+                try:
+                    font = ImageFont.truetype(font_name, font_size)
+                    break
+                except (OSError, IOError):
+                    continue
+        except Exception:
+            pass
+
+        if font is None:
+            # Fall back to default font
+            font = ImageFont.load_default()
+
+        # Get text bounding box
+        bbox = draw.textbbox((0, 0), label, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        # Calculate position (centered horizontally)
+        x = (img_width - text_width) // 2
+        if position == "top":
+            y = 8
+        else:
+            y = img_height - text_height - 8
+
+        # Draw black outline (multiple passes for thick outline)
+        outline_color = "black"
+        outline_width = max(3, font_size // 10)
+        for dx in range(-outline_width, outline_width + 1):
+            for dy in range(-outline_width, outline_width + 1):
+                if dx != 0 or dy != 0:
+                    draw.text((x + dx, y + dy), label, font=font, fill=outline_color)
+
+        # Draw yellow text on top
+        draw.text((x, y), label, font=font, fill="yellow")
+
+        # Save
+        img.save(image_path)
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to add label to {image_path}: {e}")
+        return False
+
+
+def get_display_name_from_tag(tag: str) -> str:
+    """
+    Convert entity tag to display name.
+    E.g., "CHAR_MEI" -> "MEI", "LOC_FLORIST_SHOP" -> "FLORIST SHOP"
+    """
+    # Remove prefix (CHAR_, LOC_, PROP_)
+    for prefix in ["CHAR_", "LOC_", "PROP_"]:
+        if tag.startswith(prefix):
+            name = tag[len(prefix):]
+            # Replace underscores with spaces
+            return name.replace("_", " ")
+    return tag
+
+
+def label_existing_references(refs_dir: Path, world_config: dict) -> int:
+    """
+    Add labels to all existing reference images that don't have labels yet.
+
+    Returns number of images labeled.
+    """
+    labeled = 0
+
+    # Process all entity types
+    for entity_type in ["characters", "locations", "props"]:
+        for entity in world_config.get(entity_type, []):
+            tag = entity.get("tag", "")
+            name = entity.get("name", tag)
+            ref_path = refs_dir / f"{tag}.png"
+
+            if ref_path.exists():
+                display_name = name.upper() if name else get_display_name_from_tag(tag)
+                if add_label_to_image(ref_path, display_name):
+                    labeled += 1
+                    logger.info(f"Labeled: {ref_path.name}")
+
+    return labeled
+
+
+# =============================================================================
 # MEDIA TYPE STYLE REINFORCEMENT TEMPLATES
 # These provide style-specific guidance without referencing artists
 # =============================================================================
 
 MEDIA_TYPE_STYLES = {
-    "live_action": "Photorealistic cinematography, natural lighting, film grain texture, realistic proportions and anatomy, cinematic color grading, shallow depth of field, real-world physics",
+    "live_action": "photorealistic photograph, real human being, natural skin texture with pores and imperfections, realistic lighting, DSLR camera quality, 85mm portrait lens, real-world physics, NOT a painting, NOT 3D render, NOT CGI, NOT illustration, NOT anime, NOT digital art",
     "anime": "Japanese animation style, expressive large eyes, dynamic line work, cel-shaded coloring, vibrant saturated colors, stylized proportions, dramatic poses, manga-inspired aesthetics",
     "animation_2d": "Traditional hand-drawn animation aesthetic, clean line art, fluid motion implied, painterly backgrounds, character design with appealing shapes, warm color palette, storybook quality",
     "animation_3d": "Modern 3D CGI rendering, smooth subsurface scattering on skin, stylized but grounded character design, ambient occlusion, global illumination, cinematic camera angles",
@@ -48,19 +172,39 @@ def get_media_style_prompt(visual_style: str) -> str:
 
 
 # =============================================================================
-# REFERENCE PROMPT TEMPLATES
+# REFERENCE PROMPT TEMPLATES - LIVE ACTION (Photorealistic)
 # =============================================================================
 
-CHARACTER_REF_PROMPT = """Character reference sheet of {name} showing three views: front view, 3/4 side view, and back view arranged horizontally.
+CHARACTER_REF_PROMPT_LIVE_ACTION = """Photorealistic cinematic portrait photograph. Shot on 85mm lens f/2.8, professional studio with seamless grey backdrop, soft key light with fill. Real human being with natural skin texture showing pores and imperfections. NOT 3D render, NOT CGI, NOT illustration, NOT anime, NOT digital art.
 
-{appearance}
+Subject: {name}
+
+EXACT APPEARANCE REQUIRED: {appearance}
+
+COSTUME DETAILS: {clothing}
+
+{style_notes}
+
+Absolutely no text, no labels, no watermarks, no borders, no decorative elements."""
+
+# =============================================================================
+# REFERENCE PROMPT TEMPLATES - STYLIZED (Animation/Anime/etc)
+# =============================================================================
+
+CHARACTER_REF_PROMPT_STYLIZED = """Character design sheet of {name} showing three views: front view, 3/4 side view, and back view arranged horizontally.
+
+Character appearance: {appearance}
 
 Costume: {clothing}
 
 Visual Style: {media_style_prompt}
 {style_notes}
 
-Clean grey to white gradient background, professional studio lighting, character turnaround sheet quality, consistent proportions across all three views, full body visible in each view, sharp focus, no text labels."""
+Clean gradient background, professional character design quality, consistent proportions across all three views, full body visible in each view, sharp details, no text labels."""
+
+# =============================================================================
+# LOCATION AND PROP TEMPLATES
+# =============================================================================
 
 LOCATION_REF_PROMPT = """Establishing shot of {name}.
 
@@ -81,6 +225,14 @@ Visual Style: {media_style_prompt}
 Clean studio lighting, neutral background, detailed product shot, sharp focus."""
 
 
+def get_character_prompt_template(visual_style: str) -> str:
+    """Get the appropriate character prompt template based on visual style."""
+    if visual_style == "live_action":
+        return CHARACTER_REF_PROMPT_LIVE_ACTION
+    else:
+        return CHARACTER_REF_PROMPT_STYLIZED
+
+
 class ReferencesPipeline:
     """
     Pipeline for generating single reference image per entity.
@@ -92,7 +244,7 @@ class ReferencesPipeline:
     def __init__(
         self,
         project_path: Path,
-        image_model: str = "flux_2_pro",
+        image_model: str = "z_image_turbo",
         entity_filter: Optional[list[str]] = None,  # Generate only specific tags
         log_callback: Optional[Callable[[str], None]] = None,
         stage_callback: Optional[Callable[[str, str, Optional[str]], None]] = None,
@@ -114,10 +266,11 @@ class ReferencesPipeline:
             "seedream": ImageModel.SEEDREAM,
             "flux_2_pro": ImageModel.FLUX_2_PRO,
             "p_image_edit": ImageModel.P_IMAGE_EDIT,
+            "z_image_turbo": ImageModel.Z_IMAGE_TURBO,
             "nano_banana": ImageModel.NANO_BANANA,
             "nano_banana_pro": ImageModel.NANO_BANANA_PRO,
         }
-        return model_map.get(model.lower(), ImageModel.FLUX_2_PRO)
+        return model_map.get(model.lower(), ImageModel.Z_IMAGE_TURBO)
 
     async def run(self) -> dict:
         """Execute the references pipeline."""
@@ -184,10 +337,15 @@ class ReferencesPipeline:
 
                     self._log(f"  Generating {name}...")
 
-                    prompt = CHARACTER_REF_PROMPT.format(
+                    # Use appropriate template based on visual style
+                    char_template = get_character_prompt_template(visual_style)
+                    appearance = char.get("appearance", char.get("description", ""))
+                    clothing = char.get("clothing", "period-appropriate attire")
+
+                    prompt = char_template.format(
                         name=name,
-                        appearance=char.get("appearance", char.get("description", "")),
-                        clothing=char.get("clothing", "period-appropriate attire"),
+                        appearance=appearance,
+                        clothing=clothing,
                         media_style_prompt=media_style_prompt,
                         style_notes=style_notes,
                     )
@@ -197,12 +355,15 @@ class ReferencesPipeline:
                         model=self.image_model,
                         output_path=ref_path,
                         aspect_ratio="1:1",
-                        prefix_type="generate",
+                        prefix_type="none",
                     ))
 
                     if result.success:
+                        # Add label to the generated image
+                        display_name = name.upper()
+                        add_label_to_image(ref_path, display_name)
                         generated += 1
-                        self._log(f"  {name} - saved")
+                        self._log(f"  {name} - saved with label")
                     else:
                         failed += 1
                         self._log(f"  {name} - failed: {result.error}")
@@ -243,12 +404,15 @@ class ReferencesPipeline:
                         model=self.image_model,
                         output_path=ref_path,
                         aspect_ratio="16:9",
-                        prefix_type="generate",
+                        prefix_type="none",
                     ))
 
                     if result.success:
+                        # Add label to the generated image
+                        display_name = get_display_name_from_tag(tag)
+                        add_label_to_image(ref_path, display_name)
                         generated += 1
-                        self._log(f"  {name} - saved")
+                        self._log(f"  {name} - saved with label")
                     else:
                         failed += 1
                         self._log(f"  {name} - failed: {result.error}")
@@ -289,12 +453,15 @@ class ReferencesPipeline:
                         model=self.image_model,
                         output_path=ref_path,
                         aspect_ratio="1:1",
-                        prefix_type="generate",
+                        prefix_type="none",
                     ))
 
                     if result.success:
+                        # Add label to the generated image
+                        display_name = get_display_name_from_tag(tag)
+                        add_label_to_image(ref_path, display_name)
                         generated += 1
-                        self._log(f"  {name} - saved")
+                        self._log(f"  {name} - saved with label")
                     else:
                         failed += 1
                         self._log(f"  {name} - failed: {result.error}")
@@ -356,9 +523,12 @@ class ReferencesPipeline:
 
         # Build prompt based on type
         if entity_type == "character":
-            prompt = CHARACTER_REF_PROMPT.format(
+            char_template = get_character_prompt_template(visual_style)
+            appearance = entity.get("appearance", entity.get("description", ""))
+
+            prompt = char_template.format(
                 name=name,
-                appearance=entity.get("appearance", entity.get("description", "")),
+                appearance=appearance,
                 clothing=entity.get("clothing", "period-appropriate attire"),
                 media_style_prompt=media_style_prompt,
                 style_notes=style_notes,
@@ -386,10 +556,13 @@ class ReferencesPipeline:
             model=self.image_model,
             output_path=ref_path,
             aspect_ratio=aspect,
-            prefix_type="generate",
+            prefix_type="none",
         ))
 
         if result.success:
+            # Add label to the generated image
+            display_name = get_display_name_from_tag(tag)
+            add_label_to_image(ref_path, display_name)
             return {"success": True, "path": str(ref_path)}
         else:
             return {"success": False, "error": result.error}

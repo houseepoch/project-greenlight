@@ -39,147 +39,159 @@ logger = logging.getLogger(__name__)
 # SYSTEM PROMPTS - World Bible Generation
 # =============================================================================
 
-# Each prompt is designed to generate 10-24 word responses for consistency
+# Each prompt is designed to generate 20-44 word responses for richer detail
 
 WORLD_CONTEXT_PROMPTS = {
-    "setting": """You are a world-building expert. Based on the source material provided,
-describe the SETTING of this story in 10-24 words.
+    "setting": """You are a world-building expert for cinematic pre-production.
+Describe the SETTING of this story in 20-44 words.
 
-Focus on: geographic location, environment, general atmosphere.
-Be specific and evocative. This will inform all visual decisions.
+Focus on: geographic location, specific region/country, environment type, climate, general atmosphere.
+Be specific and evocative. This will inform all visual and character design decisions.
 
-Example: "A mist-shrouded mountain village in feudal Japan, surrounded by ancient cedar forests and sacred shrines."
+Example: "Imperial Tang Dynasty China, a bustling city district of Chang'an with narrow cobblestone streets, ornate wooden buildings with curved tile roofs, lantern-lit evenings, and flower markets at every corner."
 
-Output ONLY the setting description, 10-24 words.""",
+Output ONLY the setting description, 20-44 words.""",
 
-    "time_period": """You are a world-building expert. Based on the source material provided,
-describe the TIME PERIOD of this story in 10-24 words.
+    "time_period": """You are a world-building expert for cinematic pre-production.
+Describe the TIME PERIOD of this story in 20-44 words.
 
-Focus on: specific era, year/century if applicable, historical context.
-Be precise about technological and social development.
+Focus on: specific era, year/century/decade, historical events shaping the period, technological and social context.
+Be precise about what makes this moment in history distinctive.
 
-Example: "Late Edo period Japan, 1860s, on the cusp of modernization as Western influence begins."
+Example: "Late Tang Dynasty, 8th century AD (circa 750-780 CE), the golden age of Chinese poetry and arts, just before the An Lushan Rebellion that would shake the empire."
 
-Output ONLY the time period description, 10-24 words.""",
+Output ONLY the time period description, 20-44 words.""",
 
-    "cultural_context": """You are a world-building expert. Based on the source material provided,
-describe the CULTURAL CONTEXT of this story in 10-24 words.
+    "cultural_context": """You are a world-building expert for cinematic pre-production.
+Describe the CULTURAL CONTEXT of this story in 20-44 words.
 
-Focus on: social norms, belief systems, customs, values that drive character behavior.
-This informs how characters interact and make decisions.
+Focus on: dominant culture/ethnicity, social norms, belief systems, customs, values that drive character behavior.
+This informs how characters interact, dress, and make decisions.
 
-Example: "Strict Confucian hierarchy governs all relationships; honor and family duty override personal desire."
+Example: "Han Chinese Confucian society with strict hierarchical protocols, filial piety governing family relationships, Buddhist temple influence, and a flourishing courtesan culture among the educated elite."
 
-Output ONLY the cultural context, 10-24 words.""",
+Output ONLY the cultural context, 20-44 words.""",
 
-    "social_structure": """You are a world-building expert. Based on the source material provided,
-describe the SOCIAL STRUCTURE in 10-24 words.
+    "social_structure": """You are a world-building expert for cinematic pre-production.
+Describe the SOCIAL STRUCTURE in 20-44 words.
 
-Focus on: class system, power dynamics, who holds authority and why.
-This determines character status and conflicts.
+Focus on: class system, power dynamics, who holds authority, how status is displayed through clothing and behavior.
+This determines character status, conflicts, and visual costume hierarchy.
 
-Example: "Rigid caste system with samurai nobility, merchant class rising in influence, peasants bound to land."
+Example: "Rigid imperial hierarchy: emperor and nobility at apex, scholar-officials and military commanders mid-tier, merchants gaining influence through wealth, artisans respected for skill, courtesans owned but culturally valued."
 
-Output ONLY the social structure description, 10-24 words.""",
+Output ONLY the social structure description, 20-44 words.""",
 
-    "technology_level": """You are a world-building expert. Based on the source material provided,
-describe the TECHNOLOGY LEVEL in 10-24 words.
+    "technology_level": """You are a world-building expert for cinematic pre-production.
+Describe the TECHNOLOGY LEVEL in 20-44 words.
 
-Focus on: what technology exists, what doesn't, how people accomplish tasks.
-This prevents anachronisms in visual prompts.
+Focus on: what technology exists, materials available, how people accomplish tasks, transportation, lighting, tools.
+This prevents anachronisms in visual prompts and costume design.
 
-Example: "Pre-industrial craftsmanship, paper lanterns and candles for light, horses and palanquins for travel."
+Example: "Pre-industrial craftsmanship excellence: silk weaving, porcelain making, woodblock printing, paper money. Oil lanterns and candles for light, horses and sedan chairs for travel, no glass windows."
 
-Output ONLY the technology level description, 10-24 words.""",
+Output ONLY the technology level description, 20-44 words.""",
 
-    "clothing_norms": """You are a world-building expert. Based on the source material provided,
-describe the CLOTHING NORMS in 10-24 words.
+    "clothing_norms": """You are a costume designer for cinematic pre-production.
+Describe the general CLOTHING NORMS for this setting in 20-44 words.
 
-Focus on: typical garments, materials, styles appropriate to the setting.
-This MUST inform all character costume descriptions.
+Focus on: silhouette shapes, typical garments by gender, common fabrics and materials, color significance, class distinctions in dress.
+This is a REFERENCE for costume design, NOT story-specific character costumes.
 
-Example: "Flowing hanfu robes in silk and cotton, jade ornaments, elaborate hairstyles with pins for women."
+Example: "Women wear layered hanfu with wide sleeves and floor-length skirts. Men wear changshan robes with topknots. Silk for nobility, cotton for commoners. Red for celebrations, white for mourning."
 
-Output ONLY the clothing norms description, 10-24 words.""",
+Output ONLY the clothing norms description, 20-44 words.""",
 
-    "architecture_style": """You are a world-building expert. Based on the source material provided,
-describe the ARCHITECTURE STYLE in 10-24 words.
+    "architecture_style": """You are a production designer for cinematic pre-production.
+Describe the ARCHITECTURE STYLE in 20-44 words.
 
-Focus on: building types, materials, distinctive features of the setting.
-This informs all location descriptions.
+Focus on: building types, materials, structural features, decorative elements, distinctive visual characteristics.
+This informs all location descriptions and establishes visual world consistency.
 
-Example: "Traditional wooden pavilions with curved tile roofs, paper screens, rock gardens, covered walkways."
+Example: "Traditional Tang wooden architecture: curved upswept tile roofs with glazed edges, red-lacquered columns, latticed paper screens, covered walkways connecting buildings, courtyard gardens with rock formations and ponds."
 
-Output ONLY the architecture style description, 10-24 words.""",
+Output ONLY the architecture style description, 20-44 words.""",
 
-    "color_palette": """You are a world-building expert. Based on the source material provided,
-describe the dominant COLOR PALETTE in 10-24 words.
+    "color_palette": """You are an art director for cinematic pre-production.
+Describe the dominant COLOR PALETTE in 20-44 words.
 
-Focus on: colors that define the visual mood of this world.
+Focus on: primary colors, accent colors, colors by setting (interior/exterior), color meanings in this culture.
 This creates visual consistency across all generated images.
 
-Example: "Muted earth tones with vermillion accents, ink black, jade green, gold highlights on nobility."
+Example: "Rich vermilion red for prosperity, imperial gold for nobility, jade green for life, ink black for calligraphy and hair. Interiors warm with amber lantern glow, exteriors muted earth tones."
 
-Output ONLY the color palette description, 10-24 words.""",
+Output ONLY the color palette description, 20-44 words.""",
 
-    "lighting_style": """You are a world-building expert. Based on the source material provided,
-describe the LIGHTING STYLE in 10-24 words.
+    "lighting_style": """You are a cinematographer for cinematic pre-production.
+Describe the LIGHTING STYLE in 20-44 words.
 
-Focus on: how scenes are typically lit, light sources available in this world.
-This creates cinematic consistency.
+Focus on: primary light sources in this world, time of day preferences, mood lighting, interior vs exterior lighting quality.
+This creates cinematic consistency across all scenes.
 
-Example: "Warm candlelight and paper lantern glow indoors, misty natural light outdoors, dramatic shadows."
+Example: "Warm golden hour sunlight through paper screens, intimate candlelight and lantern glow for night scenes, misty morning light outdoors, dramatic chiaroscuro shadows for tension."
 
-Output ONLY the lighting style description, 10-24 words.""",
+Output ONLY the lighting style description, 20-44 words.""",
 
-    "mood": """You are a world-building expert. Based on the source material provided,
-describe the overall MOOD/ATMOSPHERE in 10-24 words.
+    "mood": """You are a director for cinematic pre-production.
+Describe the overall MOOD/ATMOSPHERE in 20-44 words.
 
-Focus on: emotional tone, tension, underlying feelings that pervade the story.
-This guides the emotional register of all scenes.
+Focus on: emotional tone, underlying tensions, visual atmosphere, sensory qualities that pervade the story world.
+This guides the emotional register and visual treatment of all scenes.
 
-Example: "Simmering romantic tension beneath strict propriety, forbidden desire, melancholy beauty of impermanence."
+Example: "Simmering romantic tension beneath formal propriety, forbidden desire expressed through glances and poetry, melancholy beauty of impermanence, sensual intimacy in confined spaces, poetic longing."
 
-Output ONLY the mood description, 10-24 words.""",
+Output ONLY the mood description, 20-44 words.""",
 }
 
 
 CHARACTER_FIELD_PROMPTS = {
     "appearance": """You are a character designer for cinematic pre-production.
-Describe this character's PHYSICAL APPEARANCE in 20-40 words.
+Describe this character's PHYSICAL APPEARANCE in 30-50 words.
 
-Include: age, body type/build, height impression, facial structure, skin tone, eye shape/color, hair style/color/length, and 1-2 distinguishing physical traits.
-Be specific enough for visual reference generation with consistent likeness.
+MUST INCLUDE IN THIS ORDER:
+1. Ethnicity/race appropriate to the cultural context (e.g., "Chinese woman", "Japanese man", "African warrior")
+2. Age (specific number or narrow range like "early 30s")
+3. Gender
+4. Body type/build and height impression
+5. Facial features: face shape, eye shape/color, nose, lips
+6. Skin tone
+7. Hair: color, length, style, texture
+8. 1-2 distinguishing physical traits
 
-CRITICAL: Appearance must be appropriate for the world context provided.
+CRITICAL: Ethnicity MUST match the world's cultural context. Be specific for consistent visual reference.
 
-Output ONLY the appearance description, 20-40 words.""",
+Output ONLY the appearance description, 30-50 words.""",
 
     "clothing": """You are a costume designer for cinematic pre-production.
-Describe this character's TYPICAL CLOTHING in 10-24 words.
+Describe this character's DEFAULT COSTUME in 20-35 words.
 
-CRITICAL: Clothing MUST match the world context clothing norms.
-- If historical setting: period-appropriate garments only
-- If modern setting: appropriate contemporary styles
-- NEVER anachronistic clothing
+Focus on VISUAL DESIGN elements:
+- Garment types and silhouettes
+- Fabrics and textures
+- Colors and patterns
+- Accessories and adornments
+- How clothing reflects their status/role
 
-Output ONLY the clothing description, 10-24 words.""",
+CRITICAL: Costume MUST match the world's clothing norms and time period.
+Do NOT describe story context or emotions - only visual costume details.
+
+Output ONLY the costume description, 20-35 words.""",
 
     "personality": """You are a character analyst for cinematic pre-production.
-Describe this character's KEY PERSONALITY TRAITS in 10-24 words.
+Describe this character's KEY PERSONALITY TRAITS in 15-30 words.
 
-Focus on: core traits that drive their behavior, how they interact with others.
-This informs acting direction and dialogue tone.
+Focus on: core behavioral traits, emotional tendencies, how they carry themselves, interaction style with others.
+This informs acting direction, posture, and expression in reference images.
 
-Output ONLY the personality description, 10-24 words.""",
+Output ONLY the personality description, 15-30 words.""",
 
     "summary": """You are a character analyst for cinematic pre-production.
-Write a brief CHARACTER SUMMARY in 15-24 words.
+Write a brief CHARACTER SUMMARY in 20-35 words.
 
-Combine their role, key trait, and central conflict/motivation.
-This is the quick reference for this character.
+Combine: their role in the story, defining trait, central motivation, and key relationship.
+This is the quick reference that captures who this character is.
 
-Output ONLY the character summary, 15-24 words.""",
+Output ONLY the character summary, 20-35 words.""",
 }
 
 
@@ -438,14 +450,14 @@ Generate the {field_name.replace('_', ' ')} for this story world."""
             else:
                 # Clean the result (remove any extra text)
                 value = result.strip()
-                # Truncate if too long (more than ~30 words)
+                # Truncate if too long (more than ~50 words)
                 words = value.split()
-                if len(words) > 30:
-                    value = " ".join(words[:24]) + "..."
+                if len(words) > 50:
+                    value = " ".join(words[:44]) + "..."
 
                 field_values[field_name] = value
                 self._field_update(f"world.{field_name}", value, "complete")
-                self._log(f"  [OK] {field_name}: {value[:50]}...")
+                self._log(f"  [OK] {field_name}: {value[:60]}...")
 
         return WorldContext(
             time_period=field_values.get("time_period", ""),
@@ -514,8 +526,10 @@ Generate the {field_name} for this character."""
                 else:
                     value = result.strip()
                     words = value.split()
-                    if len(words) > 30:
-                        value = " ".join(words[:24]) + "..."
+                    # Allow longer descriptions for appearance (50 words) and clothing (35 words)
+                    max_words = 50 if field_name == "appearance" else 35
+                    if len(words) > max_words:
+                        value = " ".join(words[:max_words]) + "..."
                     field_values[field_name] = value
                     self._field_update(f"character.{char_tag}.{field_name}", value, "complete")
 

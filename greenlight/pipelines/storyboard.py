@@ -69,6 +69,7 @@ class StoryboardPipeline:
             "p_image_edit": ImageModel.P_IMAGE_EDIT,
             "nano_banana": ImageModel.NANO_BANANA,
             "nano_banana_pro": ImageModel.NANO_BANANA_PRO,
+            "z_image_turbo": ImageModel.Z_IMAGE_TURBO,
         }
         return model_map.get(model.lower(), ImageModel.FLUX_2_PRO)
 

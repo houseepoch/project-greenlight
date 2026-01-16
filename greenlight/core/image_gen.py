@@ -12,6 +12,7 @@ No complex context engines or singleton patterns - just direct API calls.
 import asyncio
 import base64
 import logging
+import random
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -30,6 +31,7 @@ class ImageModel(str, Enum):
     FLUX_2_PRO = "flux_2_pro"  # FLUX 2 Pro - High quality, 8 ref images
     P_IMAGE_EDIT = "p_image_edit"  # P-Image-Edit - Fast editing
     FLUX_1_1_PRO = "flux_1_1_pro"  # FLUX 1.1 Pro - Flagship
+    Z_IMAGE_TURBO = "z_image_turbo"  # Pruna AI Z-Image-Turbo - Fast, quality
 
     # Google/Gemini
     NANO_BANANA = "nano_banana"  # Gemini Flash Image
@@ -46,6 +48,7 @@ MODEL_PROVIDERS = {
     ImageModel.FLUX_2_PRO: "replicate",
     ImageModel.P_IMAGE_EDIT: "replicate",
     ImageModel.FLUX_1_1_PRO: "replicate",
+    ImageModel.Z_IMAGE_TURBO: "replicate",
     ImageModel.NANO_BANANA: "gemini",
     ImageModel.NANO_BANANA_PRO: "gemini",
     ImageModel.SD_3_5: "stability",
@@ -54,10 +57,11 @@ MODEL_PROVIDERS = {
 
 # Replicate model identifiers
 REPLICATE_MODELS = {
-    ImageModel.SEEDREAM: "bytedance/seedream-3:latest",
-    ImageModel.FLUX_2_PRO: "black-forest-labs/flux-pro",
+    ImageModel.SEEDREAM: "bytedance/seedream-4.5",  # Seedream 4.5 - supports up to 14 reference images
+    ImageModel.FLUX_2_PRO: "black-forest-labs/flux-2-pro",  # Flux 2 Pro - up to 8 reference images
     ImageModel.P_IMAGE_EDIT: "prunaai/p-image-edit",
     ImageModel.FLUX_1_1_PRO: "black-forest-labs/flux-1.1-pro",
+    ImageModel.Z_IMAGE_TURBO: "prunaai/z-image-turbo",
     ImageModel.SDXL: "stability-ai/sdxl:latest",
 }
 
@@ -114,6 +118,7 @@ class ImageRequest:
     add_clean_suffix: bool = True
     negative_prompt: Optional[str] = None
     style_suffix: Optional[str] = None
+    seed: Optional[int] = None  # Random seed for reproducibility/variation
 
 
 @dataclass
@@ -216,24 +221,68 @@ class ImageGenerator:
             "prompt": prompt,
         }
 
-        # Add aspect ratio
-        if request.aspect_ratio:
-            input_data["aspect_ratio"] = request.aspect_ratio
+        # Handle model-specific parameters
+        if request.model == ImageModel.Z_IMAGE_TURBO:
+            # Z-Image-Turbo uses height parameter instead of aspect_ratio
+            # Convert aspect ratio to height (width is auto-calculated)
+            aspect_to_height = {
+                "1:1": 768,
+                "16:9": 576,
+                "9:16": 1024,
+                "4:3": 672,
+                "3:4": 896,
+            }
+            input_data["height"] = aspect_to_height.get(request.aspect_ratio, 768)
+        else:
+            # Most models use aspect_ratio
+            if request.aspect_ratio:
+                input_data["aspect_ratio"] = request.aspect_ratio
+
+        # Add seed - use provided seed or generate random one for variation
+        # This ensures each generation is unique unless explicitly seeded
+        seed = request.seed if request.seed is not None else random.randint(0, 2147483647)
+        input_data["seed"] = seed
+        logger.debug(f"Using seed: {seed}")
+
+        # Disable safety checker for legitimate creative content
+        # This prevents false positives on period-appropriate costume descriptions
+        input_data["disable_safety_checker"] = True
+
+        # Set safety tolerance to max for Flux models (1-5 scale, 5 = most permissive)
+        if request.model in [ImageModel.FLUX_2_PRO, ImageModel.FLUX_1_1_PRO]:
+            input_data["safety_tolerance"] = 5  # Most permissive
+            input_data["output_format"] = "png"
 
         # Add negative prompt
         if request.negative_prompt:
             input_data["negative_prompt"] = request.negative_prompt
 
         # Handle reference images for models that support them
-        if request.reference_images and request.model in [ImageModel.FLUX_2_PRO, ImageModel.P_IMAGE_EDIT]:
-            ref_images = []
-            for ref_path in request.reference_images[:8]:  # Max 8 reference images
-                if ref_path.exists():
-                    with open(ref_path, "rb") as f:
-                        img_data = base64.b64encode(f.read()).decode()
-                        ref_images.append(f"data:image/png;base64,{img_data}")
-            if ref_images:
-                input_data["reference_images"] = ref_images
+        if request.reference_images:
+            # Determine max refs and parameter name based on model
+            if request.model == ImageModel.SEEDREAM:
+                max_refs = 14  # Seedream 4.5 supports up to 14 reference images
+                ref_param = "image_input"
+            elif request.model == ImageModel.FLUX_2_PRO:
+                max_refs = 8
+                ref_param = "input_images"
+            elif request.model == ImageModel.P_IMAGE_EDIT:
+                max_refs = 8
+                ref_param = "reference_images"
+            else:
+                max_refs = 0  # Model doesn't support reference images
+                ref_param = None
+
+            if ref_param:
+                ref_images = []
+                for ref_path in request.reference_images[:max_refs]:
+                    if ref_path.exists():
+                        with open(ref_path, "rb") as f:
+                            img_data = base64.b64encode(f.read()).decode()
+                            ref_images.append(f"data:image/png;base64,{img_data}")
+                if ref_images:
+                    input_data[ref_param] = ref_images
+                    logger.info(f"Added {len(ref_images)} reference images via '{ref_param}'")
 
         # Run the model
         try:
