@@ -62,6 +62,9 @@ credentials.json
 
 # Temp files
 tmpclaude-*
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
 projects/
 test_project/
 src/
