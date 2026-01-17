@@ -46,6 +46,15 @@ def add_label_to_image(image_path: Path, label: str, position: str = "top") -> b
     try:
         from PIL import Image, ImageDraw, ImageFont
 
+        # Ensure path is a Path object
+        image_path = Path(image_path)
+
+        if not image_path.exists():
+            logger.error(f"Image not found for labeling: {image_path}")
+            return False
+
+        logger.info(f"Adding label '{label}' to {image_path.name}")
+
         img = Image.open(image_path)
         draw = ImageDraw.Draw(img)
 
@@ -103,10 +112,13 @@ def add_label_to_image(image_path: Path, label: str, position: str = "top") -> b
 
         # Save
         img.save(image_path)
+        logger.info(f"Successfully labeled {image_path.name} with '{label}'")
         return True
 
     except Exception as e:
         logger.error(f"Failed to add label to {image_path}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -408,8 +420,8 @@ class ReferencesPipeline:
                     ))
 
                     if result.success:
-                        # Add label to the generated image
-                        display_name = get_display_name_from_tag(tag)
+                        # Add label to the generated image using entity name
+                        display_name = name.upper()
                         add_label_to_image(ref_path, display_name)
                         generated += 1
                         self._log(f"  {name} - saved with label")
@@ -457,8 +469,8 @@ class ReferencesPipeline:
                     ))
 
                     if result.success:
-                        # Add label to the generated image
-                        display_name = get_display_name_from_tag(tag)
+                        # Add label to the generated image using entity name
+                        display_name = name.upper()
                         add_label_to_image(ref_path, display_name)
                         generated += 1
                         self._log(f"  {name} - saved with label")
@@ -560,8 +572,8 @@ class ReferencesPipeline:
         ))
 
         if result.success:
-            # Add label to the generated image
-            display_name = get_display_name_from_tag(tag)
+            # Add label to the generated image using entity name
+            display_name = name.upper()
             add_label_to_image(ref_path, display_name)
             return {"success": True, "path": str(ref_path)}
         else:

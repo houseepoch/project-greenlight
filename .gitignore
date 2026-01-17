@@ -67,8 +67,8 @@ credentials.json
 # Temp files
 tmpclaude-*
 
-# Claude Code local settings (machine-specific)
-.claude/settings.local.json
+# Claude Code (entire directory)
+.claude/
 
 # Claude context system (development only)
 _CONTEXT/

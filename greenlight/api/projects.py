@@ -243,7 +243,11 @@ async def get_dialogues_by_path(path: str) -> dict:
 
 @router.patch("/path-data/world/entity/{entity_tag}")
 async def update_entity_by_path(entity_tag: str, body: dict, path: str) -> dict:
-    """Update entity description by full project path (path passed as query param)."""
+    """Update entity fields by full project path (path passed as query param).
+
+    Searches in characters, locations, and props arrays for the entity.
+    Updates any fields provided in the body.
+    """
     project_path = Path(path)
     config_path = project_path / "world_bible" / "world_config.json"
 
@@ -252,14 +256,18 @@ async def update_entity_by_path(entity_tag: str, body: dict, path: str) -> dict:
 
     config = json.loads(config_path.read_text(encoding="utf-8"))
 
-    # Find and update the entity
-    entities = config.get("entities", [])
+    # Search in all entity arrays
     found = False
-    for entity in entities:
-        if entity.get("tag") == entity_tag:
-            if "description" in body:
-                entity["description"] = body["description"]
-            found = True
+    for entity_type in ["characters", "locations", "props"]:
+        entities = config.get(entity_type, [])
+        for entity in entities:
+            if entity.get("tag") == entity_tag:
+                # Update all fields provided in body
+                for field, value in body.items():
+                    entity[field] = value
+                found = True
+                break
+        if found:
             break
 
     if not found:
@@ -268,7 +276,7 @@ async def update_entity_by_path(entity_tag: str, body: dict, path: str) -> dict:
     # Save updated config
     config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
 
-    return {"success": True}
+    return {"success": True, "updated_fields": list(body.keys())}
 
 
 @router.patch("/path-data/world/context/{field_key}")
@@ -959,3 +967,173 @@ async def generate_reference_by_path(body: dict, path: str) -> dict:
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+# =============================================================================
+# Checkpoint and Version Control Routes
+# =============================================================================
+
+@router.get("/{project_path:path}/storyboard/checkpoints")
+async def get_checkpoints(project_path: str) -> dict:
+    """Get all checkpoints and storage stats for a project."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    service = CheckpointService(project_dir)
+    checkpoints = service.get_all_checkpoints()
+    storage = service.get_storage_stats()
+
+    return {
+        "checkpoints": [cp.model_dump() for cp in checkpoints],
+        "storage": storage.model_dump(),
+    }
+
+
+@router.post("/{project_path:path}/storyboard/checkpoints/create")
+async def create_checkpoint(project_path: str, body: dict) -> dict:
+    """Create a new checkpoint of current project state."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    name = body.get("name", f"Checkpoint {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    description = body.get("description", "")
+
+    service = CheckpointService(project_dir)
+    checkpoint = service.create_checkpoint(
+        name=name,
+        description=description,
+    )
+
+    return {
+        "success": True,
+        "checkpoint": checkpoint.model_dump(),
+    }
+
+
+@router.post("/{project_path:path}/storyboard/checkpoints/restore")
+async def restore_checkpoint(project_path: str, body: dict) -> dict:
+    """Restore project to a checkpoint state."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    checkpoint_id = body.get("checkpoint_id", "")
+    if not checkpoint_id:
+        return {"success": False, "error": "checkpoint_id is required"}
+
+    service = CheckpointService(project_dir)
+    result = service.restore_checkpoint(checkpoint_id)
+
+    return result
+
+
+@router.delete("/{project_path:path}/storyboard/checkpoints/{checkpoint_id}")
+async def delete_checkpoint(project_path: str, checkpoint_id: str) -> dict:
+    """Delete a checkpoint."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    service = CheckpointService(project_dir)
+    result = service.delete_checkpoint(checkpoint_id)
+
+    return result
+
+
+@router.get("/{project_path:path}/storyboard/versions")
+async def get_frame_versions(project_path: str) -> dict:
+    """Get all frame versions for a project."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    service = CheckpointService(project_dir)
+    frame_versions = service.get_all_frame_versions()
+
+    # Convert to serializable format
+    frames = {}
+    for frame_id, versions in frame_versions.items():
+        frames[frame_id] = [v.model_dump() for v in versions]
+
+    return {"frames": frames}
+
+
+@router.post("/{project_path:path}/storyboard/versions/restore")
+async def restore_frame_version(project_path: str, body: dict) -> dict:
+    """Restore a single frame to a previous version."""
+    from urllib.parse import unquote
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    frame_id = body.get("frame_id", "")
+    version_id = body.get("version_id", "")
+
+    if not frame_id or not version_id:
+        return {"success": False, "error": "frame_id and version_id are required"}
+
+    service = CheckpointService(project_dir)
+    result = service.restore_frame_version(frame_id, version_id)
+
+    return result
+
+
+@router.get("/{project_path:path}/storyboard/versions/image/{version_id}")
+async def get_version_image(project_path: str, version_id: str, thumbnail: bool = False):
+    """Get a version's image or thumbnail."""
+    from urllib.parse import unquote
+    from fastapi.responses import FileResponse
+    from greenlight.core.checkpoints import CheckpointService
+
+    decoded_path = unquote(project_path)
+    path_obj = Path(decoded_path)
+    if path_obj.is_absolute() and path_obj.exists():
+        project_dir = path_obj
+    else:
+        project_dir = settings.projects_dir / decoded_path
+
+    service = CheckpointService(project_dir)
+    image_path = service.get_version_image_path(version_id, thumbnail=thumbnail)
+
+    if not image_path or not image_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    media_type = "image/jpeg" if thumbnail else "image/png"
+    return FileResponse(image_path, media_type=media_type)

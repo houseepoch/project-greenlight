@@ -355,6 +355,7 @@ class StoryboardPipeline:
         Generate a single frame by ID.
 
         Useful for regenerating specific frames after prompt edits.
+        Archives the existing frame before regeneration when force=True.
         """
         frames = self._load_frames()
         frame = next((f for f in frames if f.get("frame_id") == frame_id), None)
@@ -373,8 +374,19 @@ class StoryboardPipeline:
         if output_path.exists() and not force:
             return {"success": True, "skipped": True, "path": str(output_path)}
 
-        # Delete if force regenerate
-        if output_path.exists():
+        # Archive existing frame before regeneration
+        if output_path.exists() and force:
+            try:
+                from greenlight.core.checkpoints import CheckpointService
+                checkpoint_service = CheckpointService(self.project_path)
+                checkpoint_service.archive_frame(
+                    frame_id=clean_frame_id,
+                    healing_notes="Manual regeneration",
+                    prompt=frame.get("prompt", ""),
+                )
+                self._log(f"Archived frame {clean_frame_id} before regeneration")
+            except Exception as e:
+                self._log(f"Warning: Failed to archive frame: {e}")
             output_path.unlink()
 
         # Get world config for style

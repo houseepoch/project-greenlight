@@ -275,6 +275,7 @@ class WorldBuilderPipeline:
         log_callback: Optional[Callable[[str], None]] = None,
         progress_callback: Optional[Callable[[float], None]] = None,
         field_callback: Optional[Callable[[str, str, str], None]] = None,
+        total_fields_callback: Optional[Callable[[int, int, int], None]] = None,
     ):
         """
         Initialize the world builder.
@@ -285,6 +286,7 @@ class WorldBuilderPipeline:
             log_callback: Function to call with log messages
             progress_callback: Function to call with progress (0-1)
             field_callback: Function to call when a field completes (field_name, value, status)
+            total_fields_callback: Function to report total fields to populate (char_count, loc_count, prop_count)
         """
         self.project_path = Path(project_path)
         self.visual_style = visual_style
@@ -292,6 +294,7 @@ class WorldBuilderPipeline:
         self._log = log_callback or (lambda x: logger.info(x))
         self._progress = progress_callback or (lambda x: None)
         self._field_update = field_callback or (lambda *args: None)
+        self._total_fields = total_fields_callback or (lambda *args: None)
 
         self.llm = LLMClient()
 
@@ -318,9 +321,14 @@ class WorldBuilderPipeline:
                 source_text = source_data.get("text", "")
                 self._log(f"Loaded full source text ({len(source_text):,} chars) for context")
 
-            self._log(f"Entities: {len(entities.get('characters', []))} characters, "
-                     f"{len(entities.get('locations', []))} locations, "
-                     f"{len(entities.get('props', []))} props")
+            char_count = len(entities.get('characters', []))
+            loc_count = len(entities.get('locations', []))
+            prop_count = len(entities.get('props', []))
+
+            self._log(f"Entities: {char_count} characters, {loc_count} locations, {prop_count} props")
+
+            # Report total fields to populate for accurate progress tracking
+            self._total_fields(char_count, loc_count, prop_count)
 
             self._progress(0.05)
 

@@ -59,6 +59,10 @@ def _init_status(pipeline_id: str, name: str, stages: list[str]):
         "total_items": 0,
         "completed_items": 0,
         "current_item": None,
+        "total_fields": 0,  # For World Builder - total fields to populate
+        "completed_fields": 0,  # For World Builder - populated fields
+        "started_at": datetime.now().isoformat(),  # Track start time for duration-based estimation
+        "estimated_duration_s": None,  # Estimated duration in seconds
     }
 
 
@@ -100,8 +104,99 @@ def _complete(pipeline_id: str, success: bool = True, error: str = None):
         ps = pipeline_status[pipeline_id]
         ps["status"] = PipelineStage.COMPLETE.value if success else PipelineStage.ERROR.value
         ps["progress"] = 1.0 if success else ps["progress"]
+        ps["completed_at"] = datetime.now().isoformat()
         if error:
             ps["error"] = error
+
+
+def _set_field_progress(pipeline_id: str, completed_fields: int, total_fields: int):
+    """Update field-based progress for World Builder."""
+    if pipeline_id in pipeline_status:
+        ps = pipeline_status[pipeline_id]
+        ps["completed_fields"] = completed_fields
+        ps["total_fields"] = total_fields
+        if total_fields > 0:
+            # Reserve 5% for init and 5% for save
+            ps["progress"] = 0.05 + (completed_fields / total_fields) * 0.90
+
+
+def _set_item_progress(pipeline_id: str, completed: int, total: int, current_item: str = None):
+    """Update item-based progress (for Storyboard frames, etc.)."""
+    if pipeline_id in pipeline_status:
+        ps = pipeline_status[pipeline_id]
+        ps["completed_items"] = completed
+        ps["total_items"] = total
+        if current_item:
+            ps["current_item"] = current_item
+        if total > 0:
+            # Reserve 10% for init and 5% for save
+            ps["progress"] = 0.10 + (completed / total) * 0.85
+
+
+def _set_time_based_progress(pipeline_id: str, estimated_duration_s: int = None):
+    """Set time-based progress that pauses at 93% until completion.
+
+    Used for Director pipeline where we can't easily track individual items.
+    """
+    if pipeline_id not in pipeline_status:
+        return
+
+    ps = pipeline_status[pipeline_id]
+
+    # Set or use estimated duration
+    if estimated_duration_s:
+        ps["estimated_duration_s"] = estimated_duration_s
+
+    est_duration = ps.get("estimated_duration_s", 120)  # Default 2 minutes
+    started_at = ps.get("started_at")
+
+    if started_at:
+        start_time = datetime.fromisoformat(started_at)
+        elapsed = (datetime.now() - start_time).total_seconds()
+
+        # Calculate progress based on elapsed time
+        if elapsed < est_duration:
+            raw_progress = elapsed / est_duration
+            # Cap at 93% until complete
+            ps["progress"] = min(0.93, raw_progress * 0.93)
+        else:
+            # Over time estimate - stay at 93%
+            ps["progress"] = 0.93
+
+
+def _auto_checkpoint(project_path: str, pipeline_name: str) -> bool:
+    """Create an auto-checkpoint before running a pipeline if data exists."""
+    from greenlight.core.checkpoints import CheckpointService
+    from greenlight.core.models import CheckpointType
+
+    project_dir = Path(project_path)
+    service = CheckpointService(project_dir)
+
+    # Check if there's existing data worth archiving
+    has_data = False
+    if pipeline_name == "world_builder":
+        has_data = (project_dir / "world_bible" / "world_config.json").exists()
+    elif pipeline_name == "director":
+        has_data = (project_dir / "storyboard" / "visual_script.json").exists()
+    elif pipeline_name == "outline":
+        has_data = (project_dir / "outlines" / "confirmed_outline.json").exists()
+    elif pipeline_name == "storyboard":
+        gen_dir = project_dir / "storyboard_output" / "generated"
+        has_data = gen_dir.exists() and any(gen_dir.glob("*.png"))
+
+    if has_data:
+        try:
+            service.create_checkpoint(
+                name=f"Before {pipeline_name.replace('_', ' ').title()}",
+                description=f"Auto-checkpoint before re-running {pipeline_name}",
+                checkpoint_type=CheckpointType.AUTO,
+            )
+            return True
+        except Exception as e:
+            # Log but don't fail the pipeline
+            print(f"Warning: Auto-checkpoint failed: {e}")
+            return False
+    return False
 
 
 # =============================================================================
@@ -273,13 +368,44 @@ async def _execute_director_pipeline(pipeline_id: str, request: PipelineRequest)
     from greenlight.pipelines.director import DirectorPipeline
 
     try:
+        # Set estimated duration for time-based progress (director typically takes 60-120s)
+        _set_time_based_progress(pipeline_id, estimated_duration_s=90)
+
+        # Auto-checkpoint existing data before regenerating
+        if _auto_checkpoint(request.project_path, "director"):
+            _add_log(pipeline_id, "Archived existing visual script before regeneration")
+
+        # Track scene completion for progress updates
+        scenes_completed = [0]  # Use list for closure access
+        total_scenes = [1]  # Will be updated when known
+
+        def track_progress(progress: float):
+            """Use time-based progress that caps at 93% until complete."""
+            _set_time_based_progress(pipeline_id)
+
+        def scene_callback(scene_num: int, total: int, message: str = None):
+            """Track scene-by-scene progress."""
+            scenes_completed[0] = scene_num
+            total_scenes[0] = max(total, 1)
+            # Calculate progress: 5% init + 88% scenes (cap at 93%)
+            progress = min(0.93, 0.05 + (scene_num / total_scenes[0]) * 0.88)
+            _set_progress(pipeline_id, progress)
+            if message:
+                _add_log(pipeline_id, f"[Scene {scene_num}/{total}] {message}")
+            # Update current item for UI display
+            if pipeline_id in pipeline_status:
+                pipeline_status[pipeline_id]["current_item"] = f"Scene {scene_num}/{total}"
+                pipeline_status[pipeline_id]["completed_items"] = scene_num
+                pipeline_status[pipeline_id]["total_items"] = total
+
         pipeline = DirectorPipeline(
             project_path=Path(request.project_path),
             llm_model=request.llm,
             max_frames=request.max_frames,
             log_callback=lambda msg: _add_log(pipeline_id, msg),
             stage_callback=lambda name, status, msg=None: _set_stage(pipeline_id, name, status, msg),
-            progress_callback=lambda p: _set_progress(pipeline_id, p),
+            progress_callback=track_progress,
+            scene_callback=scene_callback,
         )
 
         result = await pipeline.run()
@@ -399,17 +525,16 @@ async def _execute_storyboard_pipeline(pipeline_id: str, request: PipelineReques
     from greenlight.pipelines.storyboard import StoryboardPipeline
 
     try:
-        # Update status tracking for item progress
+        # Auto-checkpoint existing frames before regenerating
+        if _auto_checkpoint(request.project_path, "storyboard"):
+            _add_log(pipeline_id, "Archived existing storyboard frames before regeneration")
+
+        # Update status tracking for item progress with frame tags
         def update_item_progress(completed: int, total: int, current: str = None):
-            if pipeline_id in pipeline_status:
-                ps = pipeline_status[pipeline_id]
-                ps["completed_items"] = completed
-                ps["total_items"] = total
-                if current:
-                    ps["current_item"] = current
-                # Auto-calculate progress
-                if total > 0:
-                    ps["progress"] = 0.1 + (completed / total) * 0.85
+            _set_item_progress(pipeline_id, completed, total, current)
+            # Log progress with frame indicator
+            if current:
+                _add_log(pipeline_id, f"[Frame {completed}/{total}] {current}")
 
         pipeline = StoryboardPipeline(
             project_path=Path(request.project_path),
@@ -489,14 +614,27 @@ async def _execute_outline_generator(pipeline_id: str, request: PipelineRequest)
     from greenlight.pipelines.outline_generator import OutlineGeneratorPipeline
 
     try:
-        # Track variant completion
+        # Set estimated duration for time-based progress (outline gen typically takes 30-60s)
+        _set_time_based_progress(pipeline_id, estimated_duration_s=45)
+
+        # Auto-checkpoint existing outline before regenerating
+        if _auto_checkpoint(request.project_path, "outline"):
+            _add_log(pipeline_id, "Archived existing outline before regeneration")
+
+        # Track variant completion - update time-based progress
+        variants_completed = [0]  # Use list for closure access
+
         def variant_callback(name: str, description: str, beats: list):
+            variants_completed[0] += 1
             _add_log(pipeline_id, f"[OK] {name}: {len(beats)} beats")
+            # Each variant is ~1/3 of the work, cap at 90%
+            progress = min(0.90, 0.10 + (variants_completed[0] / 3) * 0.80)
+            _set_progress(pipeline_id, progress)
 
         pipeline = OutlineGeneratorPipeline(
             project_path=Path(request.project_path),
             log_callback=lambda msg: _add_log(pipeline_id, msg),
-            progress_callback=lambda p: _set_progress(pipeline_id, p),
+            progress_callback=lambda p: _set_time_based_progress(pipeline_id),  # Use time-based
             variant_callback=variant_callback,
         )
 
@@ -713,17 +851,43 @@ async def _execute_world_builder_pipeline(pipeline_id: str, request: PipelineReq
     from greenlight.pipelines.world_builder import WorldBuilderPipeline
 
     try:
+        # Auto-checkpoint existing data before regenerating
+        if _auto_checkpoint(request.project_path, "world_builder"):
+            _add_log(pipeline_id, "Archived existing world bible before regeneration")
+
         # Track field updates for real-time UI
         field_updates = []
+        completed_fields = 0
+
+        # Calculate total fields based on entity counts
+        # Will be updated once we load the entities
+        total_fields = [0]  # Use list to allow modification in closure
 
         def field_callback(field_name: str, value: str, status: str):
+            nonlocal completed_fields
             field_updates.append({
                 "field": field_name,
                 "value": value[:100] + "..." if len(value) > 100 else value,
                 "status": status,
             })
-            # Update message with latest field
+            completed_fields += 1
+            # Update progress based on field completion
+            _set_field_progress(pipeline_id, completed_fields, total_fields[0])
+            # Update current item to show which field is being worked on
+            if pipeline_id in pipeline_status:
+                pipeline_status[pipeline_id]["current_item"] = field_name
             _add_log(pipeline_id, f"[OK] {field_name}")
+
+        def update_total_fields(char_count: int, loc_count: int, prop_count: int):
+            """Calculate total fields to populate based on entity counts."""
+            # World context: 10 fields (time_period, setting, cultural_context, etc.)
+            # Characters: 4 fields each (appearance, clothing, personality, summary)
+            # Locations: 5 fields each (description, view_north/east/south/west)
+            # Props: 1 field each (description)
+            total_fields[0] = 10 + (char_count * 4) + (loc_count * 5) + prop_count
+            if pipeline_id in pipeline_status:
+                pipeline_status[pipeline_id]["total_fields"] = total_fields[0]
+            _add_log(pipeline_id, f"Will populate {total_fields[0]} fields ({char_count} chars, {loc_count} locs, {prop_count} props)")
 
         pipeline = WorldBuilderPipeline(
             project_path=Path(request.project_path),
@@ -731,6 +895,7 @@ async def _execute_world_builder_pipeline(pipeline_id: str, request: PipelineReq
             log_callback=lambda msg: _add_log(pipeline_id, msg),
             progress_callback=lambda p: _set_progress(pipeline_id, p),
             field_callback=field_callback,
+            total_fields_callback=update_total_fields,
         )
 
         # Stage progression

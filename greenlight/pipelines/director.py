@@ -336,6 +336,7 @@ class DirectorPipeline:
         log_callback: Optional[Callable[[str], None]] = None,
         stage_callback: Optional[Callable[[str, str, Optional[str]], None]] = None,
         progress_callback: Optional[Callable[[float], None]] = None,
+        scene_callback: Optional[Callable[[int, int, Optional[str]], None]] = None,
     ):
         self.project_path = Path(project_path)
         self.max_frames = max_frames
@@ -344,6 +345,7 @@ class DirectorPipeline:
         self._log = log_callback or (lambda x: logger.info(x))
         self._stage = stage_callback or (lambda *args: None)
         self._progress = progress_callback or (lambda x: None)
+        self._scene = scene_callback or (lambda *args: None)  # For scene-level progress tracking
 
         self.llm = LLMClient()
 
@@ -406,6 +408,10 @@ class DirectorPipeline:
 
             self._log(f"Processing {len(batches)} scenes in parallel")
 
+            # Track scene completion for progress callback
+            completed_count = [0]
+            total_scenes = len(batches)
+
             # Create tasks for parallel processing
             async def process_scene(batch_idx: int, batch_beats: list[str]) -> tuple[int, Optional[dict]]:
                 """Process a single scene and return (index, result)."""
@@ -415,6 +421,9 @@ class DirectorPipeline:
                     scene_offset=scene_offset,
                     world_context=world_context_str,
                 )
+                # Increment completed count and notify
+                completed_count[0] += 1
+                self._scene(completed_count[0], total_scenes, f"Generated scene {batch_idx + 1}")
                 return batch_idx, result
 
             # Launch all scenes in parallel
@@ -424,6 +433,7 @@ class DirectorPipeline:
             ]
 
             self._log(f"Launched {len(tasks)} parallel scene generation tasks...")
+            self._scene(0, total_scenes, "Starting parallel scene generation")
 
             # Gather results (preserves order via batch_idx)
             results = await asyncio.gather(*tasks, return_exceptions=True)

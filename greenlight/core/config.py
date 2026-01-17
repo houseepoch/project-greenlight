@@ -98,8 +98,8 @@ class Settings(BaseSettings):
     default_llm: str = "grok-4-1-fast"  # Primary: Grok 4.1 Fast
     default_image_model: str = "flux_2_pro"  # Primary: FLUX 2 Pro (high quality)
 
-    # Paths
-    projects_dir: Path = Field(default_factory=lambda: Path.home() / "greenlight_projects")
+    # Paths - default to /projects inside the program's root directory
+    projects_dir: Path = Field(default_factory=lambda: Path(__file__).parent.parent.parent / "projects")
 
     # Rate limiting
     rate_limit_per_minute: int = 10

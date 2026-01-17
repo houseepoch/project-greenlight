@@ -449,3 +449,63 @@ class UploadReferenceRequest(BaseModel):
     project_path: str
     entity_tag: str
     entity_type: str
+
+
+# =============================================================================
+# CHECKPOINT/VERSIONING MODELS
+# =============================================================================
+
+class CheckpointType(str, Enum):
+    """Type of checkpoint."""
+    AUTO = "auto"        # Created automatically before regeneration
+    MANUAL = "manual"    # Created by user request
+
+
+class Checkpoint(BaseModel):
+    """A project checkpoint capturing pipeline state."""
+    checkpoint_id: str  # UUID
+    name: str
+    description: str = ""
+    created_at: datetime = Field(default_factory=datetime.now)
+    checkpoint_type: CheckpointType = CheckpointType.MANUAL
+
+    # File manifest - what was archived
+    files_archived: list[str] = Field(default_factory=list)  # Relative paths
+    frames_archived: int = 0
+
+    # Stats
+    total_frames: int = 0
+    total_scenes: int = 0
+    file_size_bytes: int = 0
+
+
+class FrameVersion(BaseModel):
+    """A single version of a frame image."""
+    version_id: str  # UUID
+    frame_id: str  # e.g., "1.1.cA"
+    iteration: int  # 1, 2, 3...
+    created_at: datetime = Field(default_factory=datetime.now)
+    image_path: str  # Path in archive
+    thumbnail_path: Optional[str] = None
+    healing_notes: str = ""  # Why was this regenerated?
+    continuity_score: float = 0.0  # From continuity check
+    file_size_bytes: int = 0
+    prompt_snapshot: str = ""  # The prompt used
+
+
+class CheckpointIndex(BaseModel):
+    """Index of all checkpoints for a project."""
+    project_path: str
+    checkpoints: list[Checkpoint] = Field(default_factory=list)
+    frame_versions: dict[str, list[FrameVersion]] = Field(default_factory=dict)  # frame_id -> versions
+    last_updated: datetime = Field(default_factory=datetime.now)
+
+
+class StorageStats(BaseModel):
+    """Storage usage statistics for checkpoints."""
+    total_checkpoints: int = 0
+    total_versions: int = 0
+    total_size_bytes: int = 0
+    total_size_mb: float = 0.0
+    oldest_checkpoint: Optional[datetime] = None
+    newest_checkpoint: Optional[datetime] = None
