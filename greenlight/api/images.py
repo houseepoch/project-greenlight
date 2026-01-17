@@ -44,5 +44,8 @@ async def get_image(path: str):
     return FileResponse(
         path=image_path,
         media_type=media_type,
-        headers={"Cache-Control": "max-age=3600"},
+        headers={
+            "Cache-Control": "max-age=3600",
+            "Access-Control-Allow-Origin": "*",
+        },
     )

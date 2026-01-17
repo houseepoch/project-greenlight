@@ -9,6 +9,7 @@ pydantic-settings>=2.0.0
 # LLM Providers
 anthropic>=0.18.0
 google-generativeai>=0.4.0
+google-genai>=1.0.0  # New SDK for Nano Banana Pro (Gemini image generation)
 
 # Image Generation
 replicate>=0.22.0

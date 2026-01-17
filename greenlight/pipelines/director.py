@@ -20,6 +20,7 @@ Flow:
 TRACE: CINESTAGE-001
 """
 
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -52,6 +53,162 @@ CAMERA_NOTATIONS = {
 # =============================================================================
 # WORLD CONTEXT BUILDER
 # =============================================================================
+
+
+def _build_visual_id(name: str, appearance: str, clothing: str) -> str:
+    """Build a short-form visual ID string for character consistency.
+
+    Uses pattern-based extraction to identify:
+    - Build/body type
+    - Age range
+    - Primary garment (color + type)
+    - Secondary garment (belt/sash)
+    - Skin tone
+    - Hair description
+    - Distinctive features (scars, marks, etc.)
+
+    Returns format: "Name: build age, garment + accessory, skin, hair, feature"
+    """
+    import re
+
+    parts = [name]
+    appearance_lower = appearance.lower()
+    clothing_lower = clothing.lower()
+
+    # --- BUILD/BODY TYPE (pattern-based) ---
+    # Must be careful not to match "plump lips" as "plump" body type
+    build_patterns = [
+        r'\b(slender|slim|lithe|petite|thin)\s+(and\s+)?(graceful|build|frame|figure|form|body)?\b',
+        r'\b(portly|stout|heavyset|rotund)\s+(build|frame|figure|form|body)?\b',
+        r'\b(plump|chubby)\s+(build|frame|figure|form|body)\b',  # Require "build" to avoid "plump lips"
+        r'\b(voluptuous|curvy|full[- ]?figured)\s*(build|frame|figure|form|body)?\b',
+        r'\b(broad[- ]?shouldered|muscular|athletic|stocky)\s*(build|frame|figure|form|body)?\b',
+        r'\b(tall|short)\s+(and\s+)?(broad|slender|thin|build|stature)?\b',
+        r'\b(average height|medium height|imposing stature)\b',
+    ]
+    builds = []
+    for pattern in build_patterns:
+        match = re.search(pattern, appearance_lower)
+        if match:
+            # Extract just the key descriptor
+            descriptor = match.group(1) if match.group(1) else match.group(0)
+            descriptor = descriptor.replace('-', ' ').strip()
+            if descriptor and descriptor not in builds:
+                builds.append(descriptor)
+
+    # --- AGE (pattern-based) ---
+    age_match = re.search(r'\b(early|mid|late)[- ]?(\d+)s\b', appearance_lower)
+    if age_match:
+        builds.append(f"{age_match.group(1)}-{age_match.group(2)}s")
+    else:
+        # Try alternate patterns like "in her 20s" or "teenager"
+        alt_age = re.search(r'\b(teenager|teen|young|elderly|middle[- ]?aged)\b', appearance_lower)
+        if alt_age:
+            builds.append(alt_age.group(1))
+
+    if builds:
+        parts.append(" ".join(builds[:3]))  # Max 3 build/age descriptors
+
+    # --- PRIMARY GARMENT (color + fabric + type) ---
+    # Generic pattern: [color] [fabric]? [garment]
+    # Or: [garment] in [color]
+    garment_types = r'(kimono|robe|dress|gown|suit|coat|jacket|shirt|blouse|tunic|changshan|surcoat|uniform|armor|cloak)'
+    fabric_types = r'(silk|cotton|linen|wool|velvet|leather|satin|brocade)?'
+    colors = r'(red|blue|green|yellow|orange|purple|pink|black|white|grey|gray|brown|gold|silver|crimson|scarlet|navy|teal|emerald|amber|ivory|cream|burgundy|maroon|indigo|violet|turquoise|coral|tan|beige|earthy green|soft earthy green|deep crimson|muted blue|dark blue|light blue|forest green|olive)'
+
+    clothing_parts = []
+
+    # Pattern 1: color [fabric] garment (e.g., "blue silk kimono")
+    pattern1 = rf'\b({colors})\s+{fabric_types}\s*{garment_types}\b'
+    match = re.search(pattern1, clothing_lower)
+    if match:
+        clothing_parts.append(match.group(0).strip())
+
+    # Pattern 2: garment in color (e.g., "robe in soft earthy green")
+    pattern2 = rf'\b{fabric_types}\s*{garment_types}\s+in\s+({colors})\b'
+    match = re.search(pattern2, clothing_lower)
+    if match:
+        # Normalize to "color garment" format
+        full_match = match.group(0)
+        parts_split = full_match.split(' in ')
+        if len(parts_split) == 2:
+            garment = parts_split[0].strip()
+            color = parts_split[1].strip()
+            clothing_parts.append(f"{color} {garment}")
+
+    # --- SECONDARY GARMENT (belt/sash/accessory) ---
+    accessory_pattern = rf'\b({colors})\s+(obi|sash|belt|scarf|cape|cloak|vest|waistcoat)\b'
+    match = re.search(accessory_pattern, clothing_lower)
+    if match:
+        clothing_parts.append(match.group(0).strip())
+
+    # Also check for "military surcoat" or similar compound garments
+    compound_pattern = rf'\b({colors})\s+(military\s+)?{garment_types}\b'
+    match = re.search(compound_pattern, clothing_lower)
+    if match and match.group(0) not in clothing_parts:
+        clothing_parts.append(match.group(0).strip())
+
+    if clothing_parts:
+        # Deduplicate and limit
+        unique_clothing = list(dict.fromkeys(clothing_parts))[:2]
+        parts.append(" + ".join(unique_clothing))
+
+    # --- SKIN TONE (pattern-based) ---
+    # Must explicitly include "skin" to avoid false positives like "dark eyes"
+    skin_patterns = [
+        r'\b(porcelain|pale|fair|light|dark|tan|tanned|olive|brown|ebony|copper|bronze|golden|ivory|alabaster)[- ]?(fair[- ]?)?(skin|skinned|complexion)\b',
+        r'\b(porcelain|ivory|alabaster|fair|pale)[- ]?fair\b',  # e.g., "porcelain-fair"
+    ]
+    for pattern in skin_patterns:
+        match = re.search(pattern, appearance_lower)
+        if match:
+            skin_desc = match.group(0).strip()
+            if 'skin' not in skin_desc:
+                skin_desc += ' skin'
+            parts.append(skin_desc)
+            break
+
+    # --- HAIR (color + style/length) ---
+    hair_colors = r'(black|brown|blonde|red|auburn|grey|gray|white|silver|golden|dark|light|raven|chestnut)'
+    hair_styles = r'(hair|topknot|bun|chignon|braid|braids|ponytail|pigtails|curls|waves|locks)'
+    hair_lengths = r'(long|short|shoulder[- ]?length|waist[- ]?length|to waist|cropped|shaved)?'
+
+    hair_match = re.search(rf'\b{hair_colors}\s+{hair_lengths}\s*{hair_styles}\b', appearance_lower)
+    if hair_match:
+        parts.append(hair_match.group(0).strip())
+    else:
+        # Try simpler pattern
+        simple_hair = re.search(rf'\b{hair_colors}\s+{hair_styles}\b', appearance_lower)
+        if simple_hair:
+            parts.append(simple_hair.group(0).strip())
+
+    # --- DISTINCTIVE FEATURES (scars, marks, etc.) ---
+    # Be specific to avoid matching "piercing gaze" as just "piercing"
+    feature_patterns = [
+        r'\b(jawline scar|facial scar|scar on \w+|scarred \w+)\b',
+        r'\b(beauty mark|birthmark|mole) on (cheek|face|chin|lip)\b',
+        r'\b(beauty mark|birthmark|mole) on (his|her) (cheek|face|chin|lip)\b',
+        r'\b(tattoo|freckles|glasses|spectacles|eyepatch)\b',
+        r'\b(calloused hands|rough hands|scarred hands|gentle calloused hands)\b',
+        r'\b(body piercing|ear piercing|nose piercing)\b',  # Avoid "piercing gaze"
+    ]
+    features = []
+    for pattern in feature_patterns:
+        match = re.search(pattern, appearance_lower)
+        if match:
+            feature_text = match.group(0).strip()
+            # Clean up "on his/her" patterns
+            feature_text = re.sub(r' on (his|her) ', ' on ', feature_text)
+            features.append(feature_text)
+
+    if features:
+        parts.append(", ".join(features[:2]))  # Max 2 features
+
+    # Build final string
+    if len(parts) > 1:
+        return f"{parts[0]}: {', '.join(parts[1:])}"
+    return name
+
 
 def build_entity_lookups(world_config: dict) -> dict:
     """Build lookup tables for mapping names to entity tags.
@@ -103,7 +260,11 @@ def build_entity_lookups(world_config: dict) -> dict:
 
 
 def build_world_context(world_config: dict) -> str:
-    """Build world context string for LLM prompts."""
+    """Build world context string for LLM prompts.
+
+    Character descriptions are formatted prominently with clear sections
+    to reinforce visual consistency in generated prompts.
+    """
     world_context = world_config.get("world_context", {})
     characters = world_config.get("characters", [])
     locations = world_config.get("locations", [])
@@ -122,17 +283,21 @@ def build_world_context(world_config: dict) -> str:
     if world_context.get("color_palette"):
         lines.append(f"Color Palette: {world_context['color_palette']}")
 
-    # Characters
+    # Characters - formatted with clear visual anchors
     if characters:
-        lines.append("\nCHARACTERS:")
+        lines.append("\n" + "="*50)
+        lines.append("CHARACTERS (USE EXACT DESCRIPTIONS - DO NOT DEVIATE)")
+        lines.append("="*50)
         for char in characters:
             name = char.get("name", "Unknown")
             appearance = char.get("appearance", "")
             clothing = char.get("clothing", "")
-            desc = f"- {name}: {appearance}"
+
+            lines.append(f"\n[{name.upper()}]")
+            if appearance:
+                lines.append(f"  APPEARANCE: {appearance}")
             if clothing:
-                desc += f", {clothing}"
-            lines.append(desc)
+                lines.append(f"  CLOTHING: {clothing}")
 
     # Locations
     if locations:
@@ -161,7 +326,7 @@ class DirectorPipeline:
     - Cards show text until image is generated, then can flip to show image
     """
 
-    BATCH_SIZE = 5  # Optimal batch size for consistent prompt quality
+    BATCH_SIZE = 1  # One scene per batch for maximum prompt quality (340-555 words)
 
     def __init__(
         self,
@@ -239,42 +404,53 @@ class DirectorPipeline:
                 for i in range(0, len(beats), self.BATCH_SIZE)
             ]
 
-            self._log(f"Processing {len(batches)} batches of {self.BATCH_SIZE} scenes")
+            self._log(f"Processing {len(batches)} scenes in parallel")
 
-            all_scenes = []
-            total_frames = 0
-
-            for batch_idx, batch_beats in enumerate(batches):
+            # Create tasks for parallel processing
+            async def process_scene(batch_idx: int, batch_beats: list[str]) -> tuple[int, Optional[dict]]:
+                """Process a single scene and return (index, result)."""
                 scene_offset = batch_idx * self.BATCH_SIZE
-                start_scene = scene_offset + 1
-                end_scene = scene_offset + len(batch_beats)
-
-                self._log(f"[Batch {batch_idx + 1}/{len(batches)}] Scenes {start_scene}-{end_scene}")
-
-                # Process batch
-                batch_result = await self._process_batch(
+                result = await self._process_batch(
                     batch_beats=batch_beats,
                     scene_offset=scene_offset,
                     world_context=world_context_str,
                 )
+                return batch_idx, result
 
-                if batch_result:
-                    scenes = batch_result.get("scenes", [])
+            # Launch all scenes in parallel
+            tasks = [
+                process_scene(batch_idx, batch_beats)
+                for batch_idx, batch_beats in enumerate(batches)
+            ]
+
+            self._log(f"Launched {len(tasks)} parallel scene generation tasks...")
+
+            # Gather results (preserves order via batch_idx)
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Process results in order
+            all_scenes = []
+            total_frames = 0
+            completed = 0
+            failed = 0
+
+            for batch_idx, result in results:
+                if isinstance(result, Exception):
+                    self._log(f"  Scene {batch_idx + 1}: ERROR - {result}")
+                    failed += 1
+                elif result:
+                    scenes = result.get("scenes", [])
                     frame_count = sum(len(s.get("frames", [])) for s in scenes)
                     all_scenes.extend(scenes)
                     total_frames += frame_count
-                    self._log(f"  -> {len(scenes)} scenes, {frame_count} frames")
+                    completed += 1
+                    self._log(f"  Scene {batch_idx + 1}: {frame_count} frames")
                 else:
-                    self._log(f"  -> ERROR: Batch failed")
+                    self._log(f"  Scene {batch_idx + 1}: ERROR - No result")
+                    failed += 1
 
-                # Progress: 15% to 85%
-                progress = 0.15 + (0.70 * (batch_idx + 1) / len(batches))
-                self._progress(progress)
-
-                # Check frame limit
-                if self.max_frames and total_frames >= self.max_frames:
-                    self._log(f"Reached frame limit ({self.max_frames})")
-                    break
+            self._log(f"Parallel generation complete: {completed} succeeded, {failed} failed")
+            self._progress(0.85)
 
             self._stage("Generate Frames", PipelineStage.COMPLETE.value)
             self._progress(0.90)
@@ -337,7 +513,16 @@ class DirectorPipeline:
         scene_offset: int,
         world_context: str,
     ) -> Optional[dict]:
-        """Process a batch of beats into scenes."""
+        """Process a batch of beats into scenes.
+
+        Args:
+            batch_beats: List of beat texts to process
+            scene_offset: Starting scene number offset
+            world_context: World context string
+
+        Note: Scenes are processed in parallel, so no sequential continuity
+        context is passed. Character consistency is maintained via world_context.
+        """
 
         # Build numbered beats text
         beats_text = "\n".join([

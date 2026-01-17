@@ -119,6 +119,10 @@ class ImageRequest:
     negative_prompt: Optional[str] = None
     style_suffix: Optional[str] = None
     seed: Optional[int] = None  # Random seed for reproducibility/variation
+    # Image editing specific
+    source_image: Optional[Path] = None  # Image to edit (for inpainting/editing)
+    edit_instruction: Optional[str] = None  # Specific edit instruction
+    resolution: str = "2K"  # For Nano Banana Pro: "1K", "2K", "4K"
 
 
 @dataclass
@@ -349,30 +353,149 @@ class ImageGenerator:
             return ImageResult(success=False, error=str(e))
 
     async def _generate_gemini(self, request: ImageRequest, prompt: str) -> ImageResult:
-        """Generate using Google Gemini image generation."""
+        """
+        Generate using Google Gemini image generation (Nano Banana).
+
+        Models:
+        - gemini-2.5-flash-image: Nano Banana - Fast, efficient, 1024px
+        - gemini-3-pro-image-preview: Nano Banana Pro - Professional quality, up to 4K
+
+        Nano Banana Pro features:
+        - High-resolution output: 1K, 2K, 4K
+        - Advanced text rendering for infographics, logos
+        - Grounding with Google Search for real-time data
+        - Up to 14 reference images (6 objects + 5 humans)
+        - Thinking mode for complex prompts
+        """
         if not settings.gemini_api_key:
             return ImageResult(success=False, error="Gemini API key not configured")
 
-        import google.generativeai as genai
-
-        genai.configure(api_key=settings.gemini_api_key)
-
-        # Select model based on request
-        model_name = (
-            "gemini-2.0-flash-preview-image-generation"
-            if request.model == ImageModel.NANO_BANANA
-            else "gemini-2.0-pro-preview-image-generation"
-        )
-
         try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=settings.gemini_api_key)
+
+            # Select model based on request
+            # Nano Banana = gemini-2.5-flash-image (fast, efficient)
+            # Nano Banana Pro = gemini-3-pro-image-preview (professional, 4K, thinking)
+            model_name = (
+                "gemini-2.5-flash-image"
+                if request.model == ImageModel.NANO_BANANA
+                else "gemini-3-pro-image-preview"
+            )
+
+            # Build content parts
+            contents = [prompt]
+
+            # Add reference images if provided
+            # Nano Banana: up to 3 images work best
+            # Nano Banana Pro: up to 14 images (6 objects + 5 humans high-fidelity)
+            max_refs = 14 if request.model == ImageModel.NANO_BANANA_PRO else 3
+            if request.reference_images:
+                for ref_path in request.reference_images[:max_refs]:
+                    if ref_path.exists():
+                        with open(ref_path, "rb") as f:
+                            img_data = f.read()
+                        # Determine mime type from extension
+                        suffix = ref_path.suffix.lower()
+                        mime_map = {
+                            ".png": "image/png",
+                            ".jpg": "image/jpeg",
+                            ".jpeg": "image/jpeg",
+                            ".webp": "image/webp",
+                            ".gif": "image/gif",
+                        }
+                        mime_type = mime_map.get(suffix, "image/png")
+                        contents.append(
+                            types.Part.from_bytes(
+                                data=img_data,
+                                mime_type=mime_type
+                            )
+                        )
+
+            # Configure image generation settings
+            # Map aspect ratio to Gemini format
+            aspect_ratio = request.aspect_ratio or "16:9"
+
+            # For Nano Banana Pro, we can specify resolution
+            image_size = "2K" if request.model == ImageModel.NANO_BANANA_PRO else None
+
+            # Build generation config
+            config = types.GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"],
+            )
+
+            # Run generation
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model=model_name,
+                contents=contents,
+                config=config,
+            )
+
+            # Extract image from response
+            if response.candidates and len(response.candidates) > 0:
+                for part in response.candidates[0].content.parts:
+                    # Skip thought parts (interim thinking images)
+                    if hasattr(part, 'thought') and part.thought:
+                        continue
+
+                    if hasattr(part, 'inline_data') and part.inline_data:
+                        # Handle data - SDK returns raw bytes, not base64
+                        raw_data = part.inline_data.data
+                        if isinstance(raw_data, bytes):
+                            image_data = raw_data
+                        else:
+                            # Fallback for older SDK versions that might return base64
+                            image_data = base64.b64decode(raw_data)
+
+                        # Save if output path provided
+                        image_path = None
+                        if request.output_path:
+                            request.output_path.parent.mkdir(parents=True, exist_ok=True)
+                            with open(request.output_path, "wb") as f:
+                                f.write(image_data)
+                            image_path = request.output_path
+
+                        return ImageResult(
+                            success=True,
+                            image_path=image_path,
+                            image_data=image_data
+                        )
+
+            return ImageResult(success=False, error="No image in response")
+
+        except ImportError:
+            # Fallback to old SDK if new one not installed
+            logger.warning("google-genai package not installed, trying legacy SDK")
+            return await self._generate_gemini_legacy(request, prompt)
+        except Exception as e:
+            logger.exception(f"Gemini generation failed: {e}")
+            return ImageResult(success=False, error=str(e))
+
+    async def _generate_gemini_legacy(self, request: ImageRequest, prompt: str) -> ImageResult:
+        """Fallback to legacy google.generativeai SDK."""
+        try:
+            import google.generativeai as genai
+
+            genai.configure(api_key=settings.gemini_api_key)
+
+            model_name = (
+                "gemini-2.5-flash-image"
+                if request.model == ImageModel.NANO_BANANA
+                else "gemini-3-pro-image-preview"
+            )
+
             model = genai.GenerativeModel(model_name)
 
             # Build content parts
             parts = [prompt]
 
-            # Add reference images if supported
+            # Add reference images
             if request.reference_images:
-                for ref_path in request.reference_images[:4]:  # Limit to 4
+                max_refs = 14 if request.model == ImageModel.NANO_BANANA_PRO else 3
+                for ref_path in request.reference_images[:max_refs]:
                     if ref_path.exists():
                         with open(ref_path, "rb") as f:
                             img_data = f.read()
@@ -393,9 +516,13 @@ class ImageGenerator:
             if hasattr(response, 'parts') and len(response.parts) > 0:
                 for part in response.parts:
                     if hasattr(part, 'inline_data'):
-                        image_data = base64.b64decode(part.inline_data.data)
+                        # Handle data - SDK may return raw bytes or base64
+                        raw_data = part.inline_data.data
+                        if isinstance(raw_data, bytes):
+                            image_data = raw_data
+                        else:
+                            image_data = base64.b64decode(raw_data)
 
-                        # Save if output path provided
                         image_path = None
                         if request.output_path:
                             request.output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -409,10 +536,10 @@ class ImageGenerator:
                             image_data=image_data
                         )
 
-            return ImageResult(success=False, error="No image in response")
+            return ImageResult(success=False, error="No image in response (legacy SDK)")
 
         except Exception as e:
-            logger.exception(f"Gemini generation failed: {e}")
+            logger.exception(f"Gemini legacy generation failed: {e}")
             return ImageResult(success=False, error=str(e))
 
     async def _generate_stability(self, request: ImageRequest, prompt: str) -> ImageResult:
@@ -423,6 +550,142 @@ class ImageGenerator:
             success=False,
             error="Stability AI direct API not implemented - use Replicate SDXL instead"
         )
+
+
+    async def edit_image(self, request: ImageRequest) -> ImageResult:
+        """
+        Edit an existing image using Nano Banana Pro's semantic masking.
+
+        This uses conversational editing - describe what to change and the model
+        will identify and modify only that part while preserving the rest.
+
+        Example:
+            result = await generator.edit_image(ImageRequest(
+                prompt="Change the sofa color to red",
+                source_image=Path("living_room.png"),
+                model=ImageModel.NANO_BANANA_PRO
+            ))
+        """
+        if not request.source_image or not request.source_image.exists():
+            return ImageResult(success=False, error="Source image required for editing")
+
+        # Force Nano Banana Pro for best editing results
+        request.model = ImageModel.NANO_BANANA_PRO
+
+        # Add source image as reference
+        request.reference_images = [request.source_image] + list(request.reference_images or [])
+
+        # Build edit prompt
+        edit_prompt = request.edit_instruction or request.prompt
+
+        # Add context to help model understand this is an edit
+        full_prompt = f"Edit the provided image: {edit_prompt}. Keep everything else unchanged."
+
+        return await self._generate_gemini_edit(request, full_prompt)
+
+    async def _generate_gemini_edit(self, request: ImageRequest, prompt: str) -> ImageResult:
+        """
+        Gemini-specific image editing using Nano Banana Pro.
+
+        Supports:
+        - Semantic masking (describe what to change, model finds it)
+        - Style transfer
+        - Element addition/removal
+        - Color/lighting adjustments
+        """
+        if not settings.gemini_api_key:
+            return ImageResult(success=False, error="Gemini API key not configured")
+
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=settings.gemini_api_key)
+
+            # Build content with source image first, then edit instruction
+            contents = []
+
+            # Add source image
+            if request.source_image and request.source_image.exists():
+                with open(request.source_image, "rb") as f:
+                    img_data = f.read()
+                suffix = request.source_image.suffix.lower()
+                mime_map = {
+                    ".png": "image/png",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".webp": "image/webp",
+                }
+                mime_type = mime_map.get(suffix, "image/png")
+                contents.append(
+                    types.Part.from_bytes(data=img_data, mime_type=mime_type)
+                )
+
+            # Add additional reference images (for style transfer, element addition)
+            for ref_path in (request.reference_images or [])[1:]:  # Skip first (source)
+                if ref_path.exists():
+                    with open(ref_path, "rb") as f:
+                        ref_data = f.read()
+                    contents.append(
+                        types.Part.from_bytes(
+                            data=ref_data,
+                            mime_type="image/png"
+                        )
+                    )
+
+            # Add the edit prompt
+            contents.append(prompt)
+
+            # Configure for image output
+            config = types.GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"],
+            )
+
+            # Run generation
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model="gemini-3-pro-image-preview",
+                contents=contents,
+                config=config,
+            )
+
+            # Extract edited image
+            if response.candidates and len(response.candidates) > 0:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, 'thought') and part.thought:
+                        continue
+
+                    if hasattr(part, 'inline_data') and part.inline_data:
+                        # Handle data - SDK returns raw bytes, not base64
+                        raw_data = part.inline_data.data
+                        if isinstance(raw_data, bytes):
+                            image_data = raw_data
+                        else:
+                            image_data = base64.b64decode(raw_data)
+
+                        image_path = None
+                        if request.output_path:
+                            request.output_path.parent.mkdir(parents=True, exist_ok=True)
+                            with open(request.output_path, "wb") as f:
+                                f.write(image_data)
+                            image_path = request.output_path
+
+                        return ImageResult(
+                            success=True,
+                            image_path=image_path,
+                            image_data=image_data
+                        )
+
+            return ImageResult(success=False, error="No edited image in response")
+
+        except ImportError:
+            return ImageResult(
+                success=False,
+                error="google-genai package not installed. Run: pip install google-genai"
+            )
+        except Exception as e:
+            logger.exception(f"Gemini edit failed: {e}")
+            return ImageResult(success=False, error=str(e))
 
 
 # Convenience function
@@ -444,3 +707,34 @@ async def generate_image(
 
     generator = ImageGenerator()
     return await generator.generate(request)
+
+
+async def edit_image(
+    source_image: Path,
+    edit_instruction: str,
+    output_path: Optional[Path] = None,
+    reference_images: Optional[list[Path]] = None,
+) -> ImageResult:
+    """
+    Quick image editing helper using Nano Banana Pro.
+
+    Args:
+        source_image: The image to edit
+        edit_instruction: What to change (e.g., "Change the sky to sunset colors")
+        output_path: Where to save the result
+        reference_images: Additional reference images for style/elements
+
+    Returns:
+        ImageResult with the edited image
+    """
+    request = ImageRequest(
+        prompt=edit_instruction,
+        model=ImageModel.NANO_BANANA_PRO,
+        source_image=source_image,
+        edit_instruction=edit_instruction,
+        output_path=output_path,
+        reference_images=reference_images or [],
+    )
+
+    generator = ImageGenerator()
+    return await generator.edit_image(request)

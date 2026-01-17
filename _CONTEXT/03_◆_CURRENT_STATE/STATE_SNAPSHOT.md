@@ -7,8 +7,8 @@
 ## CURRENT STATUS
 
 ```
-UPDATED: 2026-01-15 (Session 3)
-PHASE: Storyboard Reference Integration Complete
+UPDATED: 2026-01-16 (Session 5)
+PHASE: ICB Removed, CORS Fixes Applied
 ACTIVE TASK: Ready for Production Testing
 MODE: DEFAULT
 API STATUS: All keys configured [OK]
@@ -31,7 +31,51 @@ Queued: Production testing only
 
 ## RECENT ACTIVITY
 
-### Current Session (Part 3)
+### Current Session (Part 5)
+```
+Date: 2026-01-16
+Duration: ICB Feature + CORS Fixes + ICB Removal
+
+CORS FIXES:
+   - Added expose_headers=["*"] to CORS middleware (main.py)
+   - Added Access-Control-Allow-Origin: * to images.py FileResponse
+   - Added explicit CORS headers to SSE StreamingResponse in pipelines.py
+   - Images now load correctly from localhost:3000 → localhost:8000
+
+ICB (INTELLIGENT CONTINUITY BLENDING) - REMOVED:
+   - Feature was added to fix continuity issues on storyboard frames
+   - Used AI image editing to apply targeted fixes per issue
+   - Job state persistence for resume/reset capability
+   - SSE streaming for real-time progress updates
+   - RESULTS WERE BAD - feature removed entirely
+   - Removed from: pipelines.py, icb.py (deleted), storyboard-view.tsx
+```
+
+### Session 4
+```
+Date: 2026-01-15
+Duration: Ingestion Refactor - Full Context + Consensus
+
+INGESTION PIPELINE REFACTOR:
+   - Removed chunking entirely - process full pitch as single unit
+   - 3-way consensus extraction (entities must appear in ALL 3 parallel LLM calls)
+   - Saves source_text.json for world builder (not chunks.json)
+   - Full story context preserved for accurate entity descriptions
+
+WORLD BUILDER UPDATES:
+   - Character-specific context extraction (up to 4000 chars per character)
+   - Entity-specific context extraction (up to 3000 chars for locations/props)
+   - Uses full story context (8000 chars) for world context generation
+   - Distinct, accurate character descriptions based on actual story content
+
+TESTING:
+   - Tested with multi-chapter script (7 characters, 9 locations, 2 props)
+   - Character descriptions now distinct and story-accurate
+   - World context properly reflects setting (near-future Hokkaido, Japan)
+   - Commit: 87e33ff
+```
+
+### Session 3
 ```
 Date: 2026-01-15
 Duration: Storyboard Reference Image Integration
@@ -121,14 +165,12 @@ Documents/Images Upload
 ┌─────────────────────────────────────────────┐
 |           INGESTION PIPELINE                | [OK] COMPLETE
 ├─────────────────────────────────────────────┤
-│ [1] File Extraction (unzip if needed)       │
-│ [2] Document Processing                     │
-│     - Text/MD: Read content                 │
-│     - PDF: Extract text (pypdf)             │
-│     - DOCX: Extract text (python-docx)      │
-│     - Images: Isaac 0.1 analysis            │
-│ [3] Chunking (500-1000 tokens, 10% overlap) │
-│ [4] Entity Extraction from chunks           │
+│ [1] Process pitch/synopsis text             │
+│ [2] Full context processing (no chunking)   │
+│ [3] 3-way consensus entity extraction       │
+│     - 3 parallel LLM calls                  │
+│     - Only entities in ALL 3 are kept       │
+│ [4] Save source_text.json for world builder │
 └─────────────────────────────────────────────┘
     │
     ▼
@@ -296,7 +338,7 @@ OUTPUT: visual_script.json + prompts.json
 ## USER PREFERENCES ⚓
 
 ```
-Chunking:        Fixed token chunks (500-1000 tokens, 10% overlap)
+Ingestion:       Full context (no chunking), 3-way consensus extraction
 Entity types:    User assigns type in modal (with suggestions)
 Reference timing: On-demand generation
 Upload behavior:  Replace (upload replaces AI generation)

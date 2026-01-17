@@ -5,6 +5,7 @@ Handles all pipeline operations: writer, director, references, storyboard.
 """
 
 import asyncio
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -1223,6 +1224,290 @@ async def delete_reference(project_path: str, tag: str):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+# =============================================================================
+# STORYBOARD IMAGE GENERATION (NANO BANANA PRO)
+# =============================================================================
+
+class GenerateImageRequest(BaseModel):
+    """Request to generate a single storyboard image."""
+    project_path: str
+    frame_id: str
+    prompt: str
+    model: str = "nano_banana_pro"  # nano_banana, nano_banana_pro, flux_2_pro
+    aspect_ratio: str = "16:9"
+    resolution: str = "2K"  # 1K, 2K, 4K (for Nano Banana Pro)
+    reference_tags: list[str] = []  # Entity tags to include as references
+    style_suffix: str = ""  # Additional style instructions
+
+
+class EditImageRequest(BaseModel):
+    """Request to edit/correct an existing storyboard image."""
+    project_path: str
+    frame_id: str
+    edit_instruction: str  # What to change (semantic masking)
+    model: str = "nano_banana_pro"
+    additional_references: list[str] = []  # Extra reference images for the edit
+
+
+@router.post("/generate-image")
+async def generate_storyboard_image(request: GenerateImageRequest):
+    """
+    Generate a single storyboard image using Nano Banana Pro.
+
+    Uses Gemini's native image generation for high-quality storyboard frames.
+    Supports up to 14 reference images for character/location consistency.
+
+    Features:
+    - High-resolution output (1K, 2K, 4K)
+    - Reference image injection for consistency
+    - Style suffix for visual customization
+    """
+    import json
+    from greenlight.core.image_gen import ImageGenerator, ImageRequest, ImageModel
+
+    project_dir = Path(request.project_path)
+
+    if not project_dir.exists():
+        return {"success": False, "error": "Project not found"}
+
+    # Gather reference images based on tags
+    refs_dir = project_dir / "references"
+    reference_images = []
+
+    for tag in request.reference_tags:
+        ref_path = refs_dir / f"{tag}.png"
+        if ref_path.exists():
+            reference_images.append(ref_path)
+
+    # Map model name to enum
+    model_map = {
+        "nano_banana": ImageModel.NANO_BANANA,
+        "nano_banana_pro": ImageModel.NANO_BANANA_PRO,
+        "flux_2_pro": ImageModel.FLUX_2_PRO,
+        "seedream": ImageModel.SEEDREAM,
+    }
+    model = model_map.get(request.model, ImageModel.NANO_BANANA_PRO)
+
+    # Prepare output path
+    output_dir = project_dir / "storyboard_output" / "generated"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"{request.frame_id}.png"
+
+    try:
+        generator = ImageGenerator(project_path=project_dir)
+
+        img_request = ImageRequest(
+            prompt=request.prompt,
+            model=model,
+            aspect_ratio=request.aspect_ratio,
+            reference_images=reference_images,
+            output_path=output_path,
+            tag=request.frame_id,
+            prefix_type="generate",
+            add_clean_suffix=True,
+            style_suffix=request.style_suffix,
+            resolution=request.resolution,
+        )
+
+        result = await generator.generate(img_request)
+
+        if result.success:
+            return {
+                "success": True,
+                "frame_id": request.frame_id,
+                "image_path": str(result.image_path),
+                "model_used": result.model_used,
+                "generation_time_ms": result.generation_time_ms,
+                "references_used": len(reference_images),
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.error,
+                "frame_id": request.frame_id,
+            }
+
+    except Exception as e:
+        return {"success": False, "error": str(e), "frame_id": request.frame_id}
+
+
+@router.post("/edit-image")
+async def edit_storyboard_image(request: EditImageRequest):
+    """
+    Edit/correct an existing storyboard image using Nano Banana Pro.
+
+    Uses Gemini's semantic masking to edit specific parts of an image
+    while preserving the rest. Ideal for:
+    - Fixing character appearance issues
+    - Adjusting lighting/mood
+    - Adding/removing elements
+    - Style corrections
+    - Color grading changes
+
+    The model understands natural language instructions like:
+    - "Change the sky to sunset colors"
+    - "Make the character's hair darker"
+    - "Remove the car in the background"
+    - "Add a sword to the character's hand"
+    """
+    import json
+    from greenlight.core.image_gen import ImageGenerator, ImageRequest, ImageModel
+
+    project_dir = Path(request.project_path)
+
+    if not project_dir.exists():
+        return {"success": False, "error": "Project not found"}
+
+    # Find the source image
+    output_dir = project_dir / "storyboard_output" / "generated"
+    source_path = output_dir / f"{request.frame_id}.png"
+
+    if not source_path.exists():
+        return {
+            "success": False,
+            "error": f"Source image not found: {request.frame_id}",
+            "hint": "Generate the image first using /generate-image"
+        }
+
+    # Gather additional reference images
+    refs_dir = project_dir / "references"
+    reference_images = []
+
+    for tag in request.additional_references:
+        ref_path = refs_dir / f"{tag}.png"
+        if ref_path.exists():
+            reference_images.append(ref_path)
+
+    # Create backup of original
+    backup_dir = output_dir / "backups"
+    backup_dir.mkdir(exist_ok=True)
+    import shutil
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = backup_dir / f"{request.frame_id}_{timestamp}.png"
+    shutil.copy2(source_path, backup_path)
+
+    try:
+        generator = ImageGenerator(project_path=project_dir)
+
+        img_request = ImageRequest(
+            prompt=request.edit_instruction,
+            model=ImageModel.NANO_BANANA_PRO,  # Always use Pro for edits
+            source_image=source_path,
+            edit_instruction=request.edit_instruction,
+            output_path=source_path,  # Overwrite the original
+            reference_images=reference_images,
+            prefix_type="edit",
+        )
+
+        result = await generator.edit_image(img_request)
+
+        if result.success:
+            return {
+                "success": True,
+                "frame_id": request.frame_id,
+                "image_path": str(result.image_path),
+                "backup_path": str(backup_path),
+                "model_used": result.model_used,
+                "generation_time_ms": result.generation_time_ms,
+                "edit_instruction": request.edit_instruction,
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.error,
+                "frame_id": request.frame_id,
+                "backup_path": str(backup_path),  # Still have backup
+            }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "frame_id": request.frame_id,
+            "backup_path": str(backup_path),
+        }
+
+
+@router.post("/restore-image")
+async def restore_image_from_backup(
+    project_path: str,
+    frame_id: str,
+    backup_filename: Optional[str] = None,
+):
+    """
+    Restore an image from its backup.
+
+    If backup_filename is not provided, restores the most recent backup.
+    """
+    import shutil
+
+    project_dir = Path(project_path)
+    output_dir = project_dir / "storyboard_output" / "generated"
+    backup_dir = output_dir / "backups"
+
+    if not backup_dir.exists():
+        return {"success": False, "error": "No backups found"}
+
+    # Find the backup file
+    if backup_filename:
+        backup_path = backup_dir / backup_filename
+    else:
+        # Find most recent backup for this frame
+        backups = sorted(
+            backup_dir.glob(f"{frame_id}_*.png"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+        if not backups:
+            return {"success": False, "error": f"No backups found for {frame_id}"}
+        backup_path = backups[0]
+
+    if not backup_path.exists():
+        return {"success": False, "error": f"Backup not found: {backup_path.name}"}
+
+    try:
+        target_path = output_dir / f"{frame_id}.png"
+        shutil.copy2(backup_path, target_path)
+
+        return {
+            "success": True,
+            "message": f"Restored from {backup_path.name}",
+            "image_path": str(target_path),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/image-backups/{project_path:path}/{frame_id}")
+async def list_image_backups(project_path: str, frame_id: str):
+    """List all backups for a specific frame."""
+    project_dir = Path(project_path)
+    backup_dir = project_dir / "storyboard_output" / "generated" / "backups"
+
+    if not backup_dir.exists():
+        return {"success": True, "backups": []}
+
+    backups = []
+    for backup_path in sorted(
+        backup_dir.glob(f"{frame_id}_*.png"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True
+    ):
+        backups.append({
+            "filename": backup_path.name,
+            "path": str(backup_path),
+            "timestamp": backup_path.stat().st_mtime,
+        })
+
+    return {
+        "success": True,
+        "frame_id": frame_id,
+        "backups": backups,
+        "total": len(backups),
+    }
 
 
 # =============================================================================

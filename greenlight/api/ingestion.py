@@ -246,6 +246,69 @@ async def get_extracted_entities(project_path: str):
         raise HTTPException(status_code=500, detail=f"Failed to load entities: {e}")
 
 
+@router.get("/pending-confirmation/{project_path:path}")
+async def check_pending_confirmation(project_path: str):
+    """
+    Check if there are entities pending confirmation.
+
+    Returns true if extracted_entities.json exists and status is not 'confirmed'.
+    This allows the UI to show a recovery option for interrupted entity confirmation.
+    """
+    project_dir = Path(project_path)
+    entities_path = project_dir / "ingestion" / "extracted_entities.json"
+    confirmed_path = project_dir / "ingestion" / "confirmed_entities.json"
+
+    # No extracted entities = nothing pending
+    if not entities_path.exists():
+        return {
+            "pending": False,
+            "reason": "no_extracted_entities"
+        }
+
+    try:
+        data = json.loads(entities_path.read_text(encoding="utf-8"))
+        status = data.get("status", "pending")
+
+        # If already confirmed, check if confirmed_entities exists
+        if status == "confirmed" and confirmed_path.exists():
+            return {
+                "pending": False,
+                "reason": "already_confirmed"
+            }
+
+        # Count entities to confirm
+        entities = data.get("entities", {})
+        total_entities = (
+            len(entities.get("characters", [])) +
+            len(entities.get("locations", [])) +
+            len(entities.get("props", []))
+        )
+
+        if total_entities == 0:
+            return {
+                "pending": False,
+                "reason": "no_entities_found"
+            }
+
+        return {
+            "pending": True,
+            "status": status,
+            "entity_counts": {
+                "characters": len(entities.get("characters", [])),
+                "locations": len(entities.get("locations", [])),
+                "props": len(entities.get("props", [])),
+                "total": total_entities,
+            },
+            "created_at": data.get("created_at"),
+        }
+    except Exception as e:
+        return {
+            "pending": False,
+            "reason": "error",
+            "error": str(e)
+        }
+
+
 # =============================================================================
 # ENTITY CONFIRMATION ENDPOINTS
 # =============================================================================

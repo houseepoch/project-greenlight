@@ -49,6 +49,21 @@ const config: Config = {
           DEFAULT: "#ef4444",
           foreground: "#ffffff",
         },
+        // Greenlight theme colors (gl- prefix)
+        gl: {
+          accent: "#39ff14",  // Neon green
+          border: "#444444",
+          text: {
+            primary: "#f5f5f5",    // Light text for dark backgrounds
+            secondary: "#d1d5db",  // Slightly dimmer light gray
+            muted: "#9ca3af",      // Muted light gray
+          },
+          bg: {
+            DEFAULT: "#0a0a0a",
+            medium: "#1a1a1a",
+            hover: "#2a2a2a",
+          },
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

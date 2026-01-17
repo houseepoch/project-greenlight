@@ -42,7 +42,13 @@
       "Skill(sync-context:*)",
       "Bash(dir:*)",
       "Skill(quora)",
-      "Skill(quora:*)"
+      "Skill(quora:*)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\thriv\" -Filter \"*tmpclaude*\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 50 FullName)",
+      "Bash(powershell:*)",
+      "Bash(del \"C:\\\\Users\\\\thriv\\\\Documents\\\\project-greenlight\\\\greenlight\\\\core\\\\icb.py\")"
     ],
     "deny": []
   },

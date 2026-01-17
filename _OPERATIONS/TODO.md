@@ -7,7 +7,7 @@
 ## STATUS: ◉ ALL MAJOR TASKS COMPLETE
 
 ```
-⏰ UPDATED: 2026-01-15 (Session 2)
+⏰ UPDATED: 2026-01-16 (Session 5)
 📊 HEALTH: 🟢🟢🟢🟢🟢 (5/5)
 📦 GITHUB: https://github.com/houseepoch/project-greenlight
 ```
@@ -15,6 +15,41 @@
 ---
 
 ## ◉ MOST RECENT COMPLETED
+
+```
+🟢 ICB-REMOVAL │ ◉🅑 │ 📅 01-16
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ICB Feature Removal + CORS Fixes
+
+COMPLETED:
+├─ ✅ CORS fixes for images/SSE (main.py, images.py, pipelines.py)
+├─ ✅ ICB endpoints removed from pipelines.py
+├─ ✅ greenlight/core/icb.py deleted
+├─ ✅ ICB UI removed from storyboard-view.tsx
+├─ ✅ ICB state/interfaces/functions cleaned up
+├─ ✅ Frontend builds successfully
+├─ ✅ Backend compiles without errors
+└─ ✅ /sync-context complete
+
+REASON: ICB results were bad - feature removed entirely
+```
+
+```
+🟢 INGEST-002 │ ◉🅑 │ 📅 01-15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Ingestion Refactor - Full Context + Consensus
+
+COMPLETED:
+├─ ✅ Removed chunking - full text processing
+├─ ✅ 3-way consensus extraction (entities in ALL 3 calls)
+├─ ✅ source_text.json saved for world builder
+├─ ✅ Character-specific context extraction (4000 chars)
+├─ ✅ Entity-specific context extraction (3000 chars)
+├─ ✅ Full story context for world context (8000 chars)
+├─ ✅ Tested: 7 chars, 9 locs, 2 props - all distinct
+├─ ✅ Commit: 87e33ff
+└─ ✅ /sync-context complete
+```
 
 ```
 🟢 IMGFIX-001 │ ◉🅑 │ 📅 01-15
@@ -76,7 +111,7 @@ COMPLETED:
 ✅ BASE-001 │ ◉🅑 │ 📅 01-14 │ LLM client (Grok 4.1 Fast) ✓
 ✅ BASE-002 │ ◉🅑 │ 📅 01-14 │ Character/Location models ✓
 ✅ BASE-003 │ ◉🅑 │ 📅 01-14 │ World context extraction ✓
-✅ BASE-004 │ ◉🅑 │ 📅 01-14 │ 5-agent consensus extraction ✓
+✅ BASE-004 │ ◉🅑 │ 📅 01-14 │ 3-way consensus extraction ✓
 ✅ BASE-005 │ ◉🅑 │ 📅 01-14 │ Entity enrichment ✓
 ✅ BASE-006 │ ◉🅑 │ 📅 01-14 │ Story outline generation ✓
 ✅ BASE-007 │ ◉🅑 │ 📅 01-14 │ Director pipeline (frames) ✓
@@ -90,6 +125,8 @@ COMPLETED:
 ✅ STORYBOARD-001 │ ◉🅑 │ 📅 01-15 │ Storyboard Scene/Frame Control ✓
 ✅ GAPS-001 │ ◉🅑 │ 📅 01-15 │ API Gap Fixes (10+ endpoints) ✓
 ✅ TEST-001 │ ◉🅣 │ 📅 01-15 │ API Endpoint Tests (12/12 passing) ✓
+✅ INGEST-002 │ ◉🅑 │ 📅 01-15 │ Ingestion refactor (full context + 3-way consensus) ✓
+✅ ICB-REMOVAL │ ◉🅑 │ 📅 01-16 │ ICB feature removed (bad results) + CORS fixes ✓
 ```
 
 ---
@@ -98,7 +135,7 @@ COMPLETED:
 
 ```
 🟡 3  │ 3 optional UI tasks queued
-◆ 0  ◇ 3  ◈ 0  ◉ 17    │ by state
+◆ 0  ◇ 3  ◈ 0  ◉ 18    │ by state
 ```
 
 ---

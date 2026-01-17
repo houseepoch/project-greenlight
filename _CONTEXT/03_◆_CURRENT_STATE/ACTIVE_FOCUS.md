@@ -7,29 +7,32 @@
 ## CURRENT TASK
 
 ```
-ID: READY-002
-Title: Director Pipeline + Frontend Fixes Complete
+ID: ICB-REMOVAL
+Title: ICB Feature Removal + CORS Fixes
 Priority: 🟢 P3
 Status: ◉ COMPLETE
 ```
 
 ### Description
 ```
-Director pipeline now reads confirmed_outline.json (beats array)
-and generates visual frames directly - NO intermediate script step.
+ICB (Intelligent Continuity Blending) feature was added to fix
+continuity issues on existing storyboard frames. Results were bad
+so the feature was removed entirely.
 
-Each beat → 1 scene → 2-5 frames with cinematic prompts
-Frame prompts ARE the storytelling (photograph-style visuals)
+CORS fixes applied to enable image loading from frontend.
 ```
 
 ### What's Complete
 ```
-✅ Director pipeline accepts llm_model parameter
-✅ API stages updated: Load Outline → Load World → Generate Frames → Save
-✅ Outline modal "Use This" button for one-click variant selection
-✅ 422 errors fixed (Pydantic request body models)
-✅ Director modal 404 fixed (removed /api/director/.../script endpoint)
-✅ Full beat-to-frames pipeline operational
+✅ CORS fixes in main.py (expose_headers)
+✅ CORS headers in images.py FileResponse
+✅ CORS headers in pipelines.py SSE StreamingResponse
+✅ ICB endpoints removed from pipelines.py
+✅ greenlight/core/icb.py deleted
+✅ ICB UI removed from storyboard-view.tsx
+✅ All ICB state/interfaces/functions cleaned up
+✅ Frontend builds successfully
+✅ Backend compiles without errors
 ```
 
 ---
@@ -62,12 +65,8 @@ Frame prompts ARE the storytelling (photograph-style visuals)
 
 ### Recent Files Modified
 ```
-📍 greenlight/pipelines/__init__.py - Added exports
-📍 greenlight/pipelines/director.py - Rewritten
-📍 greenlight/pipelines/references.py - Simplified
-📍 greenlight/pipelines/storyboard.py - Updated
-📍 greenlight/api/pipelines.py - Added 10+ endpoints
-📍 tests/test_api_endpoints.py - Created
+📍 greenlight/core/ingestion.py - Full context + 3-way consensus
+📍 greenlight/pipelines/world_builder.py - Character-specific context
 ```
 
 ### Test Results
@@ -101,4 +100,4 @@ Frame prompts ARE the storytelling (photograph-style visuals)
 ---
 
 DOCUMENT_STATUS: ◆_LIVE
-TRACE: ◆📍READY-001
+TRACE: ◆📍INGEST-002

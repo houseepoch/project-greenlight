@@ -43,6 +43,7 @@ out/
 .vscode/
 *.swp
 *.swo
+*.code-workspace
 
 # OS
 .DS_Store
@@ -65,6 +66,30 @@ tmpclaude-*
 
 # Claude Code local settings (machine-specific)
 .claude/settings.local.json
+
+# Claude context system (development only)
+_CONTEXT/
+_SESSIONS/
+_OPERATIONS/
+_LOGS/
+_LEARNING/
+_PLANNING/
+CLAUDE.md
+
+# User project data
 projects/
 test_project/
+
+# Test outputs
+tests/cinestage_output/
+tests/cinestage_output_batched/
+tests/image_generation/
+style_tests/
+
+# Legacy/unused
 src/
+Knew-Code-Context.md
+SYMBOLIC_NOTATION_ANALYSIS.md
+
+# Qodo
+.qodo/

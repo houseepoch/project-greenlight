@@ -7,19 +7,19 @@
 
 ## LATEST SESSION
 
-### SESSION: S-20260115-STORYBOARD
+### SESSION: S-20260116-ICB-REMOVAL
 **MODE:** DEFAULT
-**TASK:** Storyboard Reference Image Integration
+**TASK:** ICB Feature Removal + CORS Fixes
 
 ---
 
 ## SESSION STATS
 ```
 📊 SESSION STATS
-├─ ✅ 15 completed tasks
+├─ ✅ 19 completed tasks
 ├─ 💥 0 errors
 ├─ ⏸ 0 pending decisions
-├─ 🔴0 🟠0 🟡0 🟢15 by priority
+├─ 🔴0 🟠0 🟡0 🟢19 by priority
 └─ ⏳ Ready for production testing
 ```
 
@@ -28,6 +28,82 @@
 ## LOG ENTRIES
 
 ```
+════════════════════════════════════════════════════
+⏰ SESSION START: 2026-01-16T15:00:00Z
+📋 ID: S-20260116-ICB-REMOVAL
+📥 CONTEXT: ICB feature + CORS fixes
+⏮️ PREVIOUS: S-20260115-INGEST-REFACTOR
+════════════════════════════════════════════════════
+
+⏰ 2026-01-16T16:30:00Z │ 🟢
+├─ ✅📤 /sync-context completed
+├─ 📝 Updated: STATE_SNAPSHOT.md
+├─ 📝 Updated: ACTIVE_FOCUS.md
+├─ 📝 Updated: TODO.md
+├─ 📝 Updated: CONVERSATION_LOG.md
+└─ 🔗 → Context sync
+
+⏰ 2026-01-16T16:00:00Z │ 🟢
+├─ ✅📤 ICB feature removed entirely
+├─ ⚡ User: "results were really bad lets remove the icb aspect entirely"
+├─ ⚡ Removed ICB endpoints from pipelines.py
+├─ ⚡ Deleted greenlight/core/icb.py
+├─ ⚡ Removed ICB UI from storyboard-view.tsx
+├─ ⚡ Cleaned up interfaces, state, functions
+├─ ⚡ Frontend builds successfully
+└─ 🔗 → ICB-REMOVAL
+
+⏰ 2026-01-16T15:30:00Z │ 🟢
+├─ ✅📤 ICB job state persistence added (later removed)
+├─ ⚡ Added ICBJobState dataclass for resume/reset
+├─ ⚡ Added job state endpoints (GET/DELETE)
+├─ ⚡ Added resume endpoint with SSE streaming
+├─ ⚡ Added Resume/Reset modal UI
+└─ 🔗 → ICB-JOB-STATE (removed)
+
+⏰ 2026-01-16T15:00:00Z │ 🟢
+├─ ✅📤 CORS fixes applied
+├─ ⚡ Added expose_headers=["*"] to CORS middleware
+├─ ⚡ Added Access-Control-Allow-Origin: * to images.py
+├─ ⚡ Added explicit CORS headers to SSE StreamingResponse
+├─ ⚡ Images now load correctly from frontend
+└─ 🔗 → CORS-FIX
+
+════════════════════════════════════════════════════
+⏰ SESSION START: 2026-01-15T23:00:00Z
+📋 ID: S-20260115-INGEST-REFACTOR
+📥 CONTEXT: Ingestion refactor for full context
+⏮️ PREVIOUS: S-20260115-STORYBOARD
+════════════════════════════════════════════════════
+
+⏰ 2026-01-15T23:45:00Z │ 🟢
+├─ ✅📤 /sync-context completed
+├─ 📝 Updated: STATE_SNAPSHOT.md
+├─ 📝 Updated: CONVERSATION_LOG.md
+└─ 🔗 → Context sync
+
+⏰ 2026-01-15T23:30:00Z │ 🟢
+├─ ✅📤 Ingestion refactor committed
+├─ ⚡ Removed chunking - full text processing
+├─ ⚡ 3-way consensus extraction (entities in ALL 3 calls)
+├─ ⚡ source_text.json for world builder
+├─ ⚡ Commit: 87e33ff
+└─ 🔗 → INGEST-002
+
+⏰ 2026-01-15T23:15:00Z │ 🟢
+├─ ✅📤 World builder updates
+├─ ⚡ Character-specific context extraction (4000 chars)
+├─ ⚡ Entity-specific context extraction (3000 chars)
+├─ ⚡ Full story context for world context (8000 chars)
+└─ 🔗 → WORLD-002
+
+⏰ 2026-01-15T23:00:00Z │ 🟢
+├─ ✅📤 Testing complete
+├─ ⚡ Multi-chapter script: 7 chars, 9 locs, 2 props
+├─ ⚡ Character descriptions now distinct and story-accurate
+├─ ⚡ World context: near-future Hokkaido, Japan
+└─ 🔗 → TEST-003
+
 ════════════════════════════════════════════════════
 ⏰ SESSION START: 2026-01-15T20:00:00Z
 📋 ID: S-20260115-STORYBOARD
@@ -246,7 +322,7 @@
 
 | ID | Decision | Choice | Date |
 |----|----------|--------|------|
-| USER-PREF-001 | Chunking strategy | Fixed tokens (500-1000) | 2026-01-14 |
+| USER-PREF-001 | Chunking strategy | Full context (no chunking) + 3-way consensus | 2026-01-15 |
 | USER-PREF-002 | Entity types | User assigns in modal | 2026-01-14 |
 | USER-PREF-003 | Reference timing | On-demand generation | 2026-01-14 |
 | USER-PREF-004 | Upload behavior | Replace AI reference | 2026-01-14 |
