@@ -24,59 +24,69 @@ AI-powered cinematic storyboard generator that transforms scripts and documents 
 - Next.js 14 with TypeScript
 - Tailwind CSS
 
-## Quick Start
+## Quick Start (Windows)
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 18+
-- API keys for xAI and Replicate
+- Python 3.10+ ([Download](https://python.org))
+- Node.js 18+ ([Download](https://nodejs.org))
+- API keys:
+  - **xAI** - Get from [x.ai](https://x.ai) for Grok LLM
+  - **Replicate** - Get from [replicate.com](https://replicate.com) for image generation
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Download or clone:**
    ```bash
    git clone https://github.com/houseepoch/project-greenlight.git
    cd project-greenlight
    ```
 
-2. **Set up Python environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-   pip install -r requirements.txt
+2. **Run setup (first time only):**
    ```
-
-3. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys
+   Double-click: setup.bat
    ```
+   This will:
+   - Check Python and Node.js are installed
+   - Create a virtual environment
+   - Install all dependencies
+   - Create `.env` from template
 
-4. **Install frontend dependencies:**
-   ```bash
-   cd web
-   npm install
-   cd ..
+3. **Add your API keys:**
+   Open `.env` in a text editor and add:
+   ```
+   XAI_API_KEY=xai-your-key-here
+   REPLICATE_API_TOKEN=r8_your-token-here
    ```
 
 ### Running the Application
 
-**Option 1: Use the launcher script (Windows)**
-```bash
-launch.bat
+**Start Greenlight:**
+```
+Double-click: greenlight.bat
 ```
 
-**Option 2: Run manually**
+This will:
+- Start the backend API server
+- Start the frontend UI
+- Open your browser to http://localhost:3000
 
-Terminal 1 - Backend:
+**Stop Greenlight:**
+```
+Double-click: stop.bat
+```
+Or just close the terminal windows.
+
+### Manual Start (Advanced)
+
+If you prefer command line:
+
 ```bash
+# Terminal 1 - Backend
+venv\Scripts\activate
 python -m greenlight
-# or: uvicorn greenlight.api.main:app --reload --port 8000
-```
 
-Terminal 2 - Frontend:
-```bash
+# Terminal 2 - Frontend
 cd web
 npm run dev
 ```
@@ -115,6 +125,9 @@ project-greenlight/
 │       ├── components/      # React components
 │       └── lib/             # Utilities
 ├── tests/                   # Test suite
+├── setup.bat                # First-time setup script
+├── greenlight.bat           # Start the application
+├── stop.bat                 # Stop the application
 ├── .env.example             # Environment template
 ├── requirements.txt         # Python dependencies
 └── pyproject.toml           # Python project config

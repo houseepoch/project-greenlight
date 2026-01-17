@@ -108,6 +108,38 @@ def _complete(pipeline_id: str, success: bool = True, error: str = None):
 # STATUS ENDPOINTS
 # =============================================================================
 
+@router.get("/active")
+async def get_active_pipelines():
+    """Get all active (running) pipelines."""
+    active = []
+    for pid, status in pipeline_status.items():
+        if status.get("status") == PipelineStage.RUNNING.value:
+            active.append({
+                "id": pid,
+                "name": status.get("name", pid),
+                "status": status.get("status"),
+                "progress": status.get("progress", 0),
+                "message": status.get("message", ""),
+                "current_stage": status.get("current_stage"),
+            })
+    return {"active_pipelines": active, "count": len(active)}
+
+
+@router.get("/all")
+async def get_all_pipelines():
+    """Get status of all tracked pipelines."""
+    result = []
+    for pid, status in pipeline_status.items():
+        result.append({
+            "id": pid,
+            "name": status.get("name", pid),
+            "status": status.get("status"),
+            "progress": status.get("progress", 0),
+            "message": status.get("message", ""),
+        })
+    return {"pipelines": result, "count": len(result)}
+
+
 @router.get("/status/{pipeline_id:path}")
 async def get_pipeline_status(pipeline_id: str):
     """Get status of a pipeline by ID."""

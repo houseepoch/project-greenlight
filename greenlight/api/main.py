@@ -43,6 +43,12 @@ async def root():
     return {"message": "Project Greenlight API", "version": "2.0.0"}
 
 
+@app.get("/health")
+async def health():
+    """Quick health check for startup scripts."""
+    return {"status": "ok"}
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint."""
