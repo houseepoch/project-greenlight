@@ -56,6 +56,9 @@ nul
 storyboard_output/
 references/*.png
 
+# Setup temp files
+temp_setup/
+
 # Sensitive
 *.pem
 *.key

@@ -229,6 +229,7 @@ class ImageGenerator:
         if request.model == ImageModel.Z_IMAGE_TURBO:
             # Z-Image-Turbo uses height parameter instead of aspect_ratio
             # Convert aspect ratio to height (width is auto-calculated)
+            # Note: Z-Image-Turbo is primarily used for reference images (1:1 portraits)
             aspect_to_height = {
                 "1:1": 768,
                 "16:9": 576,
