@@ -10,8 +10,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -90,7 +90,7 @@ tests/image_generation/
 style_tests/
 
 # Legacy/unused
-src/
+/src/
 Knew-Code-Context.md
 SYMBOLIC_NOTATION_ANALYSIS.md
 
